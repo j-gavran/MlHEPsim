@@ -1,0 +1,32 @@
+defaults:
+  - _self_
+  - datasets: Higgs
+
+hydra:  
+  output_subdir: null  
+  run:  
+    dir: .
+
+model_config:
+  learning_rate: 3e-4
+  weight_decay: 1e-7
+  activation: ReLU
+  output_activation: Identity
+
+  hidden_layers: [256, 256, 256, 256, 1]
+  resnet: False
+  bayes_net: False
+
+logger_config:
+  experiment_name: TEST
+  run_name: bayes
+  model_name: BinaryClassifier
+  early_stop_dict: 
+    monitor: val_loss
+    mode: min
+    patience: 8
+
+trainer_config: 
+  gpus: 1
+  max_epochs: 101
+  num_sanity_val_steps: 0

@@ -7,3 +7,4 @@ data_params:
   to_gpu: True
   subset_n: [250000, 100000, 100000]
   shuffle_data: True
+  num_workers: 0

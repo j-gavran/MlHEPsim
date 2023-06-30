@@ -162,7 +162,7 @@ class MAFMADEMOGFlowModel(MADEMOGFlowModel):
 
 @hydra.main(config_path="../conf", config_name="maf_config", version_base=None)
 def train_maf(config):
-    device = "cuda" if config["datasets"]["data_params"]["to_gpu"] else "cpu"
+    device = "cuda" if config["trainer_config"]["gpus"] else "cpu"
     input_dim = config["datasets"]["input_dim"]
 
     if config["model_config"]["use_mog"]:

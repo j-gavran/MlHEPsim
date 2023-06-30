@@ -46,7 +46,7 @@ Using Machine Learning to Simulate Distributions of Observables at the Large Had
 
 Clone repository:
 ```bash
-git clone https://github.com/j-gavran/masters.git
+git clone https://github.com/j-gavran/MlHEPsim.git
 ```
 
 Make virtual environment:
@@ -182,7 +182,7 @@ Roughly, the ML [pipeline](ml_hep_sim/pipeline/pipes.py) consists of 3 stages bu
 - ScalingTestBlock
 
 ### Other blocks
-Ppost stage 3, analysis specific:
+Post stage 3, analysis specific:
 - VariableExtractBlock
 - RatioHighestValuesCutBlock
 - CutBlock

@@ -269,8 +269,6 @@ class_train_pipeline = Pipeline(
 cluster = LocalCUDACluster(threads_per_worker=2, dashboard_address=":8787")
 client = Client(cluster)
 
-class_train_pipeline, override = self.get_class_train_pipeline()
-
 # build configuration from yaml and overriden config dict
 x1 = ConfigBuilderBlock(
     override_config=override,

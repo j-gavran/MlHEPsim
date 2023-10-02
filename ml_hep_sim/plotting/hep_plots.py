@@ -3,6 +3,9 @@ import numpy as np
 from matplotlib.patches import Rectangle
 from uncertainties import unumpy
 
+ALPHA = 0.5
+HATCH = "//////"
+
 
 class StackPlot:
     def __init__(self, x, hists_lst, data_hist=None, subplots_kwargs=None):
@@ -42,10 +45,10 @@ class StackPlot:
             err = errors[i]
             d = b_right - b_left
             self.ax.add_patch(
-                Rectangle((b_left, hi - err), d, err, zorder=10, color="k", fill=False, alpha=0.8, lw=0, hatch="/////")
+                Rectangle((b_left, hi - err), d, err, zorder=10, color="k", fill=False, alpha=ALPHA, lw=0, hatch=HATCH)
             )
             self.ax.add_patch(
-                Rectangle((b_left, hi), d, err, zorder=10, color="k", fill=False, alpha=0.8, lw=0, hatch="/////")
+                Rectangle((b_left, hi), d, err, zorder=10, color="k", fill=False, alpha=ALPHA, lw=0, hatch=HATCH)
             )
 
         return self.ax
@@ -61,8 +64,9 @@ class StackPlot:
         label_x_end=1,
         label_x_pts=7,
         use_errorbar=False,
+        ylim=None,
     ):
-        self.ax_lower = self.ax.inset_axes(bounds=[0, -0.2, 1, 0.2])
+        self.ax_lower = self.ax.inset_axes(bounds=[0, -0.25, 1, 0.2])
 
         self.ax_lower.axhline(1, lw=1, c="k", ls="--")
         self.ax_lower.set_ylabel(ylabel, fontsize=15, labelpad=10)
@@ -74,12 +78,12 @@ class StackPlot:
 
         z_idx = np.where(counts_den != 0.0)[0]
 
-        unc_num_err = unumpy.uarray(counts_num, counts_num_err)[z_idx]
+        unc_num_arr = unumpy.uarray(counts_num, counts_num_err)[z_idx]
         unc_den_arr = unumpy.uarray(counts_den, counts_den_err)[z_idx]
 
         ratio = counts_num[z_idx] / counts_den[z_idx]
 
-        ratio_unc = unc_num_err / unc_den_arr
+        ratio_unc = unc_num_arr / unc_den_arr
 
         ratio_err = np.array([i.std_dev for i in ratio_unc])
 
@@ -103,9 +107,9 @@ class StackPlot:
                         zorder=10,
                         color="k",
                         fill=False,
-                        alpha=0.8,
+                        alpha=ALPHA,
                         lw=0,
-                        hatch="/////",
+                        hatch=HATCH,
                     )
                 )
                 self.ax_lower.add_patch(
@@ -116,13 +120,16 @@ class StackPlot:
                         zorder=10,
                         color="k",
                         fill=False,
-                        alpha=0.8,
+                        alpha=ALPHA,
                         lw=0,
-                        hatch="/////",
+                        hatch=HATCH,
                     )
                 )
 
-        self.ax.set_xticks([1])
-        self.ax.set_xticklabels([1])
+        self.ax.set_xticks([])
+        self.ax.set_xticklabels([])
+
+        if ylim:
+            self.ax_lower.set_ylim(ylim)
 
         return self.ax

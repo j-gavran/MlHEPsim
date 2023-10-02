@@ -34,10 +34,6 @@ Using Machine Learning to Simulate Distributions of Observables at the Large Had
     - [Stage 3 blocks: Testing](#stage-3-blocks-testing)
     - [Other blocks](#other-blocks)
     - [Example: building a pipeline](#example-building-a-pipeline)
-  - [Using distributed pipeline (experimental)](#using-distributed-pipeline-experimental)
-    - [Dask dashboard](#dask-dashboard)
-    - [Example 1: train classifier and override some parameters](#example-1-train-classifier-and-override-some-parameters)
-    - [Example 2: use trained classifier for inference](#example-2-use-trained-classifier-for-inference)
   - [Analysis setup](#analysis-setup)
     - [Workflow](#workflow)
     - [List of analysis blocks](#list-of-analysis-blocks)
@@ -82,8 +78,6 @@ All model parameters can be set inside yaml files in [ml_hep_sim/conf/](ml_hep_s
 # Running
 1. Directly from model files 
 2. Using a pipeline
-   - Standard
-   - Distributed using dask (experimental)
 
 # Documentation
 
@@ -212,116 +206,6 @@ x4 = ModelTrainerBlock()(x2, x3)
 
 class_train_pipeline.compose(x1, x2, x3, x4)
 class_train_pipeline.fit().save()
-```
-
-## Using distributed pipeline (experimental)
-Uses dask to build DAGs and run them on a cluster in parallel. Slight change of syntax due to inner workings of dask (use ```take()``` method instead of a ```__call__()```). Examples can be found [here](ml_hep_sim/pipeline/dask_testing/test_dask_gen_class.py). Currently, only model training is tested.
-
-### Dask dashboard
-By default:
-```
-http://localhost:8787/status
-```
-
-### Example 1: train classifier and override some parameters
-```python
-from ml_hep_sim.pipeline.distributed_blocks import (
-    ClassifierRunnerBlock,
-    ConfigBuilderBlock,
-    DatasetBuilderBlock,
-    ModelBuilderBlock,
-    ModelLoaderBlock,
-    ModelTrainerBlock,
-    ReferenceDataLoaderBlock,
-)
-
-from ml_hep_sim.pipeline.distributed_pipes import Pipeline
-
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
-
-
-run_name = "Higgs_class_test"
-pipeline_path = "ml_pipeline/test/"
-
-override = {
-    "datasets": {
-        "data_name": "higgs",
-        "data_params": {
-            "subset_n": [10**6, 10**5, 10**5],
-            "rescale": "logit_normal",
-            "to_gpu": True,
-        },
-    },
-    "logger_config": {"run_name": run_name, "experiment_name": "TEST"},
-    "trainer_config": {"gpus": 1, "max_epochs": 20},
-    "model_config": {
-        "resnet": False,
-        "hidden_layers": [128, 128, 1],
-    },
-}
-
-class_train_pipeline = Pipeline(
-    pipeline_name=f"{run_name}_train_pipe",
-    pipeline_path=pipeline_path,
-)
-
-cluster = LocalCUDACluster(threads_per_worker=2, dashboard_address=":8787")
-client = Client(cluster)
-
-# build configuration from yaml and overriden config dict
-x1 = ConfigBuilderBlock(
-    override_config=override,
-    config_path="../conf",
-    config_name="classifier_config",
-    model_name="BinaryClassifier",
-)
-# build model
-x2 = ModelBuilderBlock(model_type="other").take(x1)
-# build dataset
-x3 = DatasetBuilderBlock().take(x1)
-# train model
-x4 = ModelTrainerBlock().take(x2, x3)
-# compose pipeline
-class_train_pipeline.compose(x1, x2, x3, x4)
-# fit and save
-class_train_pipeline.fit()
-class_train_pipeline.save()
-
-client.close()
-```
-
-### Example 2: use trained classifier for inference
-```python
-cluster = LocalCUDACluster(threads_per_worker=2, dashboard_address=":8787")
-client = Client(cluster)
-
-class_train_pipeline.load()
-
-class_infer_pipeline = Pipeline(
-    pipeline_name=f"{run_name}_infer_pipe",
-    pipeline_path=pipeline_path,
-)
-
-# reuse config and model from training pipeline
-x1, x4 = copy.deepcopy(class_train_pipeline.pipes[0]), copy.deepcopy(class_train_pipeline.pipes[3])
-# build dataset for classification
-x5 = DatasetBuilderBlock().take(x1)
-# load reference dataset
-x6 = ReferenceDataLoaderBlock(rescale_reference=x1.config["datasets"]["data_params"]["rescale"]).take(x5)
-# load model
-x7 = ModelLoaderBlock().take(x1, x4)
-# run classifier
-x8 = ClassifierRunnerBlock(save_data=True).take(x6, x7)
-# compose pipeline
-class_infer_pipeline.compose(x1, x4, x5, x6, x7, x8)
-# fit pipeline
-class_infer_pipeline.fit()
-
-# get results
-results = class_infer_pipeline.computed.results
-
-client.close()
 ```
 
 ## Analysis setup

@@ -1,5 +1,5 @@
 input_dim: 18
-data_name: higgs
+data_name: higgs_bkg
 
 data_params:
   batch_size: 1024
@@ -7,4 +7,3 @@ data_params:
   to_gpu: True
   subset_n: [250000, 100000, 100000]
   shuffle_data: True
-  num_workers: 0

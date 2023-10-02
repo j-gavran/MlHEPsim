@@ -3,7 +3,9 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from tqdm import tqdm
 
+from ml_hep_sim.data_utils.dataset_utils import rescale_data
 from ml_hep_sim.data_utils.toy_datasets import TOY_DATASETS
 from ml_hep_sim.stats.stat_plots import two_sample_plot
 
@@ -32,8 +34,9 @@ def plot_vae_result_on_event(data_name, model, logger, dataset, idx=0, use_hexbi
             sample = model.sample(subset, device=model.device).cpu().numpy()
 
             scalers = model.scalers
-            X = scalers[2].inverse_transform(X)
-            sample = scalers[0].inverse_transform(sample)
+            if len(scalers) != 0:
+                X = scalers[2].inverse_transform(X)
+                sample = scalers[0].inverse_transform(sample)
 
             fig, axs = plt.subplots(6, 3, figsize=(10, 10))
             axs = axs.flatten()
@@ -52,6 +55,70 @@ def plot_vae_result_on_event(data_name, model, logger, dataset, idx=0, use_hexbi
 
             plt.tight_layout()
             logger.experiment.log_figure(logger.run_id, fig, f"Higgs_generated_log_{idx}.jpg")
+
+        #             subset = 10**4
+        #             X_sig = np.load("data/higgs/HIGGS_18_feature_sig_train.npy")[:subset]
+        #             X_bkg = np.load("data/higgs/HIGGS_18_feature_bkg_train.npy")[:subset]
+        #             X_sig, _ = rescale_data(X_sig[:, 1:], rescale_type="maxabs")
+        #             X_bkg, _ = rescale_data(X_bkg[:, 1:], rescale_type="maxabs")
+        #
+        #             X_sig = torch.from_numpy(X_sig.astype(np.float32)).cuda()
+        #             X_bkg = torch.from_numpy(X_bkg.astype(np.float32)).cuda()
+        #
+        #             with torch.no_grad():
+        #                 model.eval()
+        #
+        #                 mu_sig, logvar_sig = model.vae.encode(X_sig)
+        #                 z_sig = model.vae.reparameterize(mu_sig, logvar_sig).cpu().numpy()
+        #
+        #                 mu_bkg, logvar_bkg = model.vae.encode(X_bkg)
+        #                 z_bkg = model.vae.reparameterize(mu_bkg, logvar_bkg).cpu().numpy()
+        #
+        #                 loss_sigs_rec = []
+        #                 loss_sigs_kld = []
+        #                 for i in tqdm(range(len(X_sig))):
+        #                     recon_batch, mu, logvar = model(X_sig[i, :])
+        #                     loss_sig = model.vae.loss_function(recon_batch, X_sig, mu, logvar)
+        #                     loss_sigs_rec.append(loss_sig[0].cpu().numpy())
+        #                     loss_sigs_kld.append(loss_sig[1].cpu().numpy())
+        #
+        #                 loss_bkgs_rec = []
+        #                 loss_bkgs_kld = []
+        #                 for i in tqdm(range(len(X_bkg))):
+        #                     recon_batch, mu, logvar = model(X_bkg[i, :])
+        #                     loss_bkg = model.vae.loss_function(recon_batch, X_bkg, mu, logvar)
+        #                     loss_bkgs_rec.append(loss_bkg[0].cpu().numpy())
+        #                     loss_bkgs_kld.append(loss_bkg[1].cpu().numpy())
+        #
+        #             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+        #             _, bins, _ = axs[0].hist(loss_bkgs_kld, bins=50, histtype="step", lw=2)
+        #             axs[0].hist(loss_sigs_kld, bins=50, histtype="step", lw=2)
+        #
+        #             _, bins, _ = axs[1].hist(loss_bkgs_rec, bins=50, histtype="step", lw=2)
+        #             axs[1].hist(loss_sigs_rec, bins=50, histtype="step", lw=2)
+        #
+        #             axs[0].set_title("KL loss")
+        #             axs[1].set_title("reconstruction loss")
+        #
+        #             plt.tight_layout()
+        #             logger.experiment.log_figure(logger.run_id, fig, f"losses_{idx}.jpg")
+        #
+        #             fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+        #             axs = axs.flatten()
+        #             axs[0].scatter(z_bkg[:, 0], z_bkg[:, 1], s=1, alpha=0.2)
+        #             axs[0].scatter(z_sig[:, 0], z_sig[:, 1], s=1, alpha=0.2)
+        #             axs[0].set_title("z")
+        #
+        #             axs[1].scatter(mu_bkg[:, 0].cpu().numpy(), mu_bkg[:, 1].cpu().numpy(), s=1, alpha=0.2)
+        #             axs[1].scatter(mu_sig[:, 0].cpu().numpy(), mu_sig[:, 1].cpu().numpy(), s=1, alpha=0.2)
+        #             axs[1].set_title("mu")
+        #
+        #             axs[2].scatter(logvar_bkg[:, 0].cpu().numpy(), logvar_bkg[:, 1].cpu().numpy(), s=1, alpha=0.2)
+        #             axs[2].scatter(logvar_sig[:, 0].cpu().numpy(), logvar_sig[:, 1].cpu().numpy(), s=1, alpha=0.2)
+        #             axs[2].set_title("logvar")
+        #
+        #             plt.tight_layout()
+        #             logger.experiment.log_figure(logger.run_id, fig, f"proj_z_2d_{idx}.jpg")
 
         elif data_name in TOY_DATASETS:
             subset = 3 * 10**4

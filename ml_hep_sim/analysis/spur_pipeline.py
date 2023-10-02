@@ -13,6 +13,7 @@ class SpurBlock(Block):
     def __init__(
         self,
         histograms=None,
+        errors=None,
         mc_test=False,
         bkg_err=None,
         alpha=None,
@@ -22,6 +23,7 @@ class SpurBlock(Block):
     ):
         super().__init__()
         self.histograms = histograms
+        self.errors = errors
         self.mc_test = mc_test
         self.bkg_err = bkg_err
         self.alpha = alpha
@@ -32,38 +34,29 @@ class SpurBlock(Block):
         self.results = []
 
     def mle_fit(self):
-        pyhf.set_backend(pyhf.tensorlib, pyhf.optimize.minuit_optimizer(tolerance=1e-3))
+        pyhf.set_backend("numpy", "minuit")
 
         if self.mc_test:
             sig, bkg, data = self.histograms["sig_mc"], self.histograms["bkg_mc"], self.histograms["data_mc"]
         else:
             sig, bkg, data = self.histograms["sig_gen"], self.histograms["bkg_gen"], self.histograms["data_mc"]
 
-        spec = prep_data(sig, bkg, self.bkg_err)
+        eps = 1e-12
+        spec = prep_data(sig + eps, bkg + eps, self.bkg_err, mc_err=self.errors["nu_b_ml"])
 
         model = pyhf.Model(spec)
         observations = list(data) + model.config.auxdata
-
-        # bins = len(sig)
-        # if self.bonly is True:
-        #     fixed_params = [True] + [False] * bins
-        #     init_pars = [0.0] + [1.0] * bins
-        # else:
-        #     fixed_params = [False] * (bins + 1)
-        #     init_pars = [1.0] * (bins + 1)
-
         result, twice_nll = pyhf.infer.mle.fit(
             observations,
             model,
-            # init_pars=init_pars,
-            par_bounds=self.par_bounds,
-            # fixed_params=fixed_params,
             return_uncertainties=True,
             return_fitted_val=True,
+            par_bounds=self.par_bounds,
         )
 
         bestfit, errors = result.T
         self.bestfit = [bestfit, twice_nll]
+
         return model, bestfit, errors
 
     def run(self):
@@ -117,6 +110,7 @@ def get_spur_pipeline(
     N_gen=10**6,
     mc_test=False,
     scale_by_alpha=True,
+    **kwargs,
 ):
     logger = setup_logger("spur_pipeline")
     logger = None
@@ -143,10 +137,10 @@ def get_spur_pipeline(
                 scale_by_alpha=scale_by_alpha,
             )(b_sig_bkg)
 
-            b_spur = SpurBlock(bkg_err=bkg_err, mc_test=mc_test)(b_hists)
+            b_spur = SpurBlock(bkg_err=bkg_err, mc_test=mc_test, **kwargs)(b_hists)
             spure_parse_blocks.append(b_spur)
 
-            b_gc1 = GCBlock(exclude=["alpha", "histograms", "logger", "bonly"])(b_hists)
+            b_gc1 = GCBlock(exclude=["alpha", "histograms", "logger", "bonly", "errors"])(b_hists)
             b_gc2 = GCBlock(exclude=["results", "logger"])(b_spur)
 
             spur_pipelines += [*hists_pipeline.pipes, b_hists, b_gc1, b_spur, b_gc2]
@@ -161,11 +155,10 @@ def get_spur_pipeline(
 
 
 if __name__ == "__main__":
-    # pipe = get_spur_pipeline(lumi_step=20, sf_pts=2, ntoys=1, use_classifier=True, bin_range=(0.5, 1.1))
     nu_bs = np.linspace(10**3, 10**5, 2)
     alphas = np.linspace(0.01, 0.1, 2)
 
-    pipe = get_spur_pipeline(nu_bs, alphas)
+    pipe = get_spur_pipeline(nu_bs, alphas, N_gen=2 * 10**4)
     pipe.fit()
 
     res = pipe.pipes[-1]

@@ -1,11 +1,17 @@
 import numpy as np
 import torch
-from ml_hep_sim.data_utils.gauss_rank_scaler import GaussRankScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
+from sklearn.preprocessing import (
+    MaxAbsScaler,
+    MinMaxScaler,
+    RobustScaler,
+    StandardScaler,
+)
 from torch.utils.data import Dataset, Subset
+
+from ml_hep_sim.data_utils.gauss_rank_scaler import GaussRankScaler
 
 
 def plot_data_hist(X, axs, n_bins, log_scale=False, col_names=None, **hist_kwargs):
@@ -183,6 +189,13 @@ def rescale_data(x_data, rescale_type):
         scaler = GaussRankScaler()
         x_scaled = scaler.fit_transform(x_data)
 
+    elif rescale_type == "maxabs":
+        scaler = MaxAbsScaler()
+        x_scaled = scaler.fit_transform(x_data)
+
+    elif rescale_type in ["none", None]:
+        return x_data, None
+
     else:
         raise ValueError
 
@@ -218,7 +231,7 @@ if __name__ == "__main__":
         batch_size=1,
         rescale="logit",
         num_workers=12,
-        subset_n=[10 ** 5, 0, 0],
+        subset_n=[10**5, 0, 0],
         shuffle_data=False,
     )
 

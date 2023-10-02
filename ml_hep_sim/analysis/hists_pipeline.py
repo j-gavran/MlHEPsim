@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 
 from ml_hep_sim.analysis.cut_pipeline import get_cut_pipeline
@@ -108,7 +110,7 @@ class MakeHistsFromSamples(Block):
             (sig_mc_hist == 0).any(),
             (bkg_mc_hist == 0).any(),
         ]:
-            raise ValueError("One or more bin is empty! Change bin range...")
+            logging.warning("One or more bin is empty! Change bin range or number of bins...")
 
         self.cut_histograms = {
             "sig_gen": sig_ml_hist,
@@ -193,6 +195,8 @@ class MakeHistsFromSamples(Block):
             "data_mlmc": sigma_data_mlmc,
         }
 
+        self.logger.debug(f"Making hists for alpha {self.alpha} and {self.nu_b_mc} nu_B_mc")
+
         return self.histograms, self.errors
 
     def run(self):
@@ -252,6 +256,7 @@ class MakeHistsFromSamplesLumi(MakeHistsFromSamples):
         )
         self.lumi, self.xsec, self.eff = lumi, xsec, eff
         self.lumi_histograms = []
+        self.lumi_errors = []
         self.expected_N = []
 
     def run(self):
@@ -266,10 +271,11 @@ class MakeHistsFromSamplesLumi(MakeHistsFromSamples):
                 f"considering: S_mc={self.nu_s_mc}, B_mc={self.nu_b_mc} and alpha={self.alpha} with {lumi} lumi"
             )
 
-            histograms, _ = self._make_hists_from_gen_mc_samples()
+            histograms, errors = self._make_hists_from_gen_mc_samples()
             self.lumi_histograms.append(histograms)
+            self.lumi_errors.append(errors)
 
-        return self.lumi_histograms
+        return self.lumi_histograms, self.lumi_errors
 
 
 def get_hists_pipeline(
@@ -281,7 +287,7 @@ def get_hists_pipeline(
     alpha=None,
     logger=None,
     use_classifier=False,  # use NN classifier instead of variable
-    N_gen=10 ** 6,
+    N_gen=10**6,
     bonly=False,
     scale_by_alpha=True,
 ):

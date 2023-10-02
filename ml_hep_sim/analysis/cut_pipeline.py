@@ -3,7 +3,7 @@ from ml_hep_sim.pipeline.blocks import CutBlock, CutByIndexBlock, RedoRescaleDat
 from ml_hep_sim.pipeline.pipes import Pipeline
 
 
-def get_cut_pipeline(cut_value=0.5, use_classifier=True, N_gen=10 ** 6, logger=None):
+def get_cut_pipeline(cut_value=0.5, use_classifier=True, N_gen=10**6, logger=None):
     # get generator pipeline with classification
     class_pipeline = get_generator_pipeline(use_classifier=use_classifier, N_gen=N_gen, logger=logger)
 

@@ -19,7 +19,16 @@ from ml_hep_sim.stats.ul import (
 
 
 class UpperLimitScannerBlock(Block):
-    def __init__(self, bkg_err, mc_test=False, lumi=None, lumi_histograms=None, par_bounds=None, workers=1):
+    def __init__(
+        self,
+        bkg_err,
+        mc_test=False,
+        lumi=None,
+        lumi_histograms=None,
+        lumi_errors=None,
+        par_bounds=None,
+        workers=1,
+    ):
         """Block to scan upper limits.
 
         Uses ml_hep_sim.stats.ul.UpperLimitCalculator with histograms from ml_hep_sim.analysis.hists_pipeline.MakeHistsFromSamples.
@@ -41,6 +50,7 @@ class UpperLimitScannerBlock(Block):
         self.bkg_err = bkg_err
         self.lumi = lumi
         self.lumi_histograms = lumi_histograms
+        self.lumi_errors = lumi_errors
         self.workers = workers
         self.mc_test = mc_test
         self.par_bounds = par_bounds
@@ -48,7 +58,7 @@ class UpperLimitScannerBlock(Block):
         self.ul_calcs = []
         self.results = []
 
-    def make_ul_calculators(self, bounds_low=0.1, bounds_up=10.0, rtol=0.01, scan_pts=None):
+    def make_ul_calculators(self, bounds_low=0.1, bounds_up=10.0, rtol=0.1, scan_pts=None):
         """Make UpperLimitCalculator objects for each luminosity point.
 
         Parameters
@@ -63,7 +73,7 @@ class UpperLimitScannerBlock(Block):
             See UpperLimitCalculator class, by default None.
         """
         lumis = np.linspace(*self.lumi)
-        for lumi, hist in zip(lumis, self.lumi_histograms):
+        for lumi, hist, err in zip(lumis, self.lumi_histograms, self.lumi_errors):
             if self.mc_test:
                 sig, bkg, data = hist["sig_mc"], hist["bkg_mc"], hist["data_mc"]
             else:
@@ -74,6 +84,7 @@ class UpperLimitScannerBlock(Block):
                 bkg,
                 data,
                 self.bkg_err,
+                err["nu_b_ml"],
                 lumi,
                 bounds_low=bounds_low,
                 bounds_up=bounds_up,
@@ -87,7 +98,7 @@ class UpperLimitScannerBlock(Block):
 
     def scan_upper_limits(self, parse_results=True, **kwargs):
         """For kwargs see https://scikit-hep.org/pyhf/_generated/pyhf.infer.hypotest.html#pyhf.infer.hypotest."""
-        pyhf.set_backend(pyhf.tensorlib, pyhf.optimize.minuit_optimizer(tolerance=0.1))
+        pyhf.set_backend("numpy", "minuit")
 
         ul_calcs_splits = np.array_split(self.ul_calcs, self.workers)
 
@@ -148,7 +159,7 @@ def get_ul_pipeline(
     bins=22,
     use_classifier=False,
     bin_range=(0, 4),
-    N_gen=10 ** 6,
+    N_gen=10**6,
 ):
     hists_pipeline = get_hists_pipeline(use_classifier=use_classifier)
     hists_pipeline.pipes = hists_pipeline.pipes[:-1]  # replace with lumi block
@@ -246,21 +257,32 @@ class PullBlock(Block):
         self.results = None  # pulls, pullerr, errors (including mu error at index 0), labels
 
     def mle_fit(self):
-        pyhf.set_backend(pyhf.tensorlib, pyhf.optimize.minuit_optimizer(tolerance=1e-3))
+        pyhf.set_backend("numpy", "minuit")
 
         if self.mc_test:
             sig, bkg, data = self.histograms["sig_mc"], self.histograms["bkg_mc"], self.histograms["data_mc"]
         else:
             sig, bkg, data = self.histograms["sig_gen"], self.histograms["bkg_gen"], self.histograms["data_mc"]
 
-        spec = prep_data(sig, bkg, self.bkg_err)
+        eps = 1e-12
+        spec = prep_data(sig + eps, bkg + eps, self.bkg_err, mc_err=self.errors["nu_b_ml"])
+
+        # par_bounds = [0, 10]
 
         model = pyhf.Model(spec)
         observations = list(data) + model.config.auxdata
-        result, twice_nll = pyhf.infer.mle.fit(observations, model, return_uncertainties=True, return_fitted_val=True)
+        result, twice_nll = pyhf.infer.mle.fit(
+            observations,
+            model,
+            return_uncertainties=True,
+            return_fitted_val=True,
+            # init_pars=[1.0 for i in range(len(bkg) + 1)],
+            # par_bounds=[par_bounds] * (len(bkg) + 1),
+        )
 
         bestfit, errors = result.T
         self.bestfit = [bestfit, twice_nll]
+
         return model, bestfit, errors
 
     def run(self):
@@ -300,7 +322,7 @@ class PullBlock(Block):
         return self.results
 
 
-def pull_plot(pulls, pullerr, errors, labels, save=None):
+def pull_plot(pulls, pullerr, errors, labels, save=None, l=None, title=None, text=False):
     fig, ax = plt.subplots()
     fig.set_size_inches(20, 5)
 
@@ -334,10 +356,20 @@ def pull_plot(pulls, pullerr, errors, labels, save=None):
         fmt="none",
     )
 
+    if l:
+        ax.axvline(l, c="r", ls="--")
+
+    if title:
+        ax.set_title(title, fontsize=18)
+
+    if text:
+        ax.text(0.5, 1.5, r"Relative systematic$\longrightarrow$", color="red", fontsize=18)
+        ax.text(31, 1.5, r"MC statistical uncertainty$\longrightarrow$", color="red", fontsize=18)
+
     # error > 1
     error_gt1 = np.argmax(errors > 1) - 0.5
     ax.axvline(x=error_gt1, color="red", linestyle="--")
-    ax.text(error_gt1 + 0.1, 1.5, r"$\sigma \geq 1 \longrightarrow$", color="red", fontsize=18)
+    # ax.text(error_gt1 + 0.1, 1.5, r"$\sigma \geq 1 \longrightarrow$", color="red", fontsize=18)
     plt.tight_layout()
     if save:
         plt.savefig(save)

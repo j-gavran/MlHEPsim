@@ -16,7 +16,7 @@ PyQt5==5.15.9
 pandas>=1.3.2
 
 # parallel computing 
-dask-cuda>=23.6.0
+# dask-cuda>=23.6.0
 
 # for torch see docs https://pytorch.org/get-started/locally/
 torch==2.0.1+cu118

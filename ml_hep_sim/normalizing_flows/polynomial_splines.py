@@ -669,7 +669,7 @@ class PolynomialSplineFlowModel(PlFlowModel):
 
 @hydra.main(config_path="../conf", config_name="polynomial_splines_config", version_base=None)
 def train_polynomial_splines(config):
-    device = "cuda" if config["trainer_config"]["gpus"] else "cpu"
+    device = "cuda" if config["datasets"]["data_params"]["to_gpu"] else "cpu"
     input_dim = config["datasets"]["input_dim"]
 
     return train_wrapper(

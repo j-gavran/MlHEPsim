@@ -215,7 +215,7 @@ class MADEMOGFlowModel(PlFlowModel):
 
 @hydra.main(config_path="../conf", config_name="made_mog_config", version_base=None)
 def train_mademog(config):
-    device = "cuda" if config["trainer_config"]["gpus"] else "cpu"
+    device = "cuda" if config["datasets"]["data_params"]["to_gpu"] else "cpu"
     input_dim = config["datasets"]["input_dim"]
 
     return train_wrapper(

@@ -104,7 +104,20 @@ def generate_N_data_from_pipes(
 
 
 class UpperLimitCalculator:
-    def __init__(self, sig, bkg, data, bkg_err, N, bounds_low=0.1, bounds_up=5.0, rtol=0.01, eps=1e-3, scan_pts=None):
+    def __init__(
+        self,
+        sig,
+        bkg,
+        data,
+        bkg_err,
+        mc_err,
+        N,
+        bounds_low=0.1,
+        bounds_up=5.0,
+        rtol=0.01,
+        eps=1e-3,
+        scan_pts=None,
+    ):
         """Class for upper limit params.
 
         Parameters
@@ -144,6 +157,7 @@ class UpperLimitCalculator:
         """
         self.sig, self.bkg, self.data = sig + eps, bkg + eps, data + eps
         self.bkg_err = bkg_err
+        self.mc_err = mc_err
         self.bounds_low, self.bound_up = bounds_low, bounds_up
         self.rtol = rtol
         self.eps = eps
@@ -163,7 +177,7 @@ def calculate_upper_limit(calcs, **kwargs):
 
     for c in calcs:
         logging.warning(f"calculator {c} with N={c.N} in loop")
-        spec = prep_data(c.sig, c.bkg, c.bkg_err)
+        spec = prep_data(c.sig, c.bkg, c.bkg_err, c.mc_err)
         model = pyhf.Model(spec)
 
         data = list(c.data) + model.config.auxdata
@@ -174,8 +188,8 @@ def calculate_upper_limit(calcs, **kwargs):
             c.bounds_low,
             c.bound_up,
             level=0.05,
-            rtol=c.rtol,
-            **kwargs,
+            rtol=c.rtol,  # https://scikit-hep.org/pyhf/_modules/pyhf/infer/utils.html#create_calculator
+            # **kwargs,
         )
         results.append([c.N, obs_limit, exp_limits])
 

@@ -1,8 +1,8 @@
-import pyhf
 import numpy as np
+import pyhf
 
 
-def prep_data(sig, bkg, bkg_unc):
+def prep_data(sig, bkg, bkg_unc=None, mc_err=None):
     spec = {
         "channels": [
             {
@@ -24,9 +24,14 @@ def prep_data(sig, bkg, bkg_unc):
                         "data": list(bkg),
                         "modifiers": [
                             {
+                                "name": "uncorr_bkguncrt",
+                                "type": "shapesys",
+                                "data": list(bkg * bkg_unc),
+                            },
+                            {
                                 "name": "mc_staterror",
                                 "type": "staterror",
-                                "data": list((bkg * bkg_unc).astype(int)),
+                                "data": list(mc_err),
                             },
                         ],
                     },

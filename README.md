@@ -253,7 +253,7 @@ Scripts should generally be run in the following order:
 2. [Cut pipeline](ml_hep_sim/analysis/cut_pipeline.py)
 3. [Histogram pipeline](ml_hep_sim/analysis/hists_pipeline.py)
 4. [Upper limit pipeline](ml_hep_sim/analysis/ul_pipeline.py)
-    - Pull plots ([example pipeline tree](ml_hep_sim/analysis/results/pulls/pull_pipe.png))
+    - Pull plots ([example pipeline tree](https://github.com/j-gavran/MlHEPsim/blob/9704de7b90bec65da9ff34ecfae7dffe99a3987e/ml_hep_sim/analysis/results/pulls/pull_pipe.png))
 5. [CLs pipeline](ml_hep_sim/analysis/cls_pipeline.py)
 6. [Spurious signal pipeline](ml_hep_sim/analysis/spur_pipeline.py)
 
@@ -274,7 +274,6 @@ Scripts should generally be run in the following order:
   - SpurBlockResultsParser
 
 ## Miscellaneous
-- [Dask testing](ml_hep_sim/pipeline/dask_testing/)
 - [Prebuilt pipelines](ml_hep_sim/pipeline/prebuilt/)
 - [Model testing notebooks](ml_hep_sim/model_testing_notebooks/)
 - [Analysis results plots](ml_hep_sim/analysis/results/)

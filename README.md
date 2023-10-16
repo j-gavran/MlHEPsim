@@ -9,6 +9,8 @@
 
 Using Machine Learning to Simulate Distributions of Observables at the Large Hadron Collider
 
+Arxiv link: https://arxiv.org/abs/2310.08994
+
 # Table of contents: 
 
 - [MlHEPsim](#mlhepsim)

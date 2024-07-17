@@ -6,5 +6,3 @@ high-level features derived by physicists to help discriminate between the two c
 This is a binary classification problem dataset. The class label y ∈ {1, 0} is whether the signal was found in the event or not.
 
 Original article: https://www.nature.com/articles/ncomms5308
-
-![Feynman diagram](../../tutorials/pytorch_tutorial/images/higgs.png)

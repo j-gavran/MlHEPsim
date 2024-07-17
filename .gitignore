@@ -94,10 +94,6 @@ dmypy.json
 # PyCharm
 .idea/
 
-# VsCode
-.vscode
-
-
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

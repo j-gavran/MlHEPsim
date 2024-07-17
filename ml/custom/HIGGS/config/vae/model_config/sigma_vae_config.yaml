@@ -1,0 +1,55 @@
+model_name: vae
+latent_dim: 10
+likelihood_type: normal # should be normal for all our use cases
+
+# optimal_sigma: True # if True, sigma is learned, else it is calculated from data
+# shared_optimal_sigma: True # if True, sigma is shared between all features, else it is calculated for each feature separately
+
+encoder_layers: [128, 128, 128]
+decoder_layers: [128, 128, 128]
+mlp_module: BasicResMLP
+activation: LeakyReLU
+act_out: null
+batchnorm: True
+dropout: 0.0
+act_first: False
+repeats: 2
+
+# prior config
+prior_type: flow # standard_normal, mog or flow
+n_mixtures: null # for MOG prior (number of Gaussian mixtures)
+
+# Glow or RealNVP
+flow_model:
+  model_name: Glow
+  base_distribution: normal
+  n_mixtures: null
+
+  activation: LeakyReLU
+  num_flows: 8
+  num_hidden_layers: 3
+  hidden_layer_dim: 128
+  batchnorm: False
+  batchnorm_flow: True
+  use_masks: False
+
+# RQSplines
+# flow_model:
+#   model_name: rqsplines
+#   base_distribution: normal
+# 
+#   activation: ReLU
+#   num_flows: 6
+#   num_hidden_layers: 2
+#   hidden_layer_dim: 128
+#   batchnorm_flow: True
+#   conv1x1: True
+#   res_layers_in_block: 2
+#   normalization_out: True
+# 
+#   u_net: False
+#   resnet: False
+#   ar: False
+# 
+#   bins: 10
+#   tail_bound: 5.0

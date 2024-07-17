@@ -1,9 +1,0 @@
-input_dim: 18
-data_name: higgs_bkg
-
-data_params:
-  batch_size: 1024
-  rescale: logit_normal
-  to_gpu: True
-  subset_n: [250000, 100000, 100000]
-  shuffle_data: True

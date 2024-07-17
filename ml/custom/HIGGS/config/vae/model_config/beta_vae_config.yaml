@@ -1,0 +1,17 @@
+model_name: beta_vae
+latent_dim: 8
+likelihood_type: normal # should be normal for all our use cases
+
+beta: 0.1
+encoder_layers: [256, 256, 256]
+decoder_layers: [256, 256, 256]
+mlp_module: BasicResMLP
+activation: ReLU
+act_out: null
+batchnorm: True
+dropout: 0.0
+act_first: False
+repeats: 2
+
+prior_type: standard_normal
+n_mixtures: null

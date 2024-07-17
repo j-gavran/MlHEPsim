@@ -1,46 +1,37 @@
+# ml
+torch==2.1.2
+torchmetrics==1.0.1
+lightning==2.0.5
+mlflow==2.4.2
+scikit-learn==1.3.0
+netron>=7.1.8
+onnx==1.14.0
+torchinfo==1.8.0
+
 # numeric
-numpy>=1.19.5
-scipy>=1.7.1
-scikit-image>=0.19.2
-uncertainties>=3.1.7
+pandas==2.0.3
+scipy==1.11.1
+sympy==1.11.1
+tables==3.8.0
+uncertainties==3.1.7
+numba==0.59.0
+numpy==1.26.4
 
 # plotting
-matplotlib>=3.3.4
-palettable>=3.3.0
-mplhep>=0.3.23
-seaborn>=0.12.2
-bokeh==2.4.2
-PyQt5==5.15.9
+matplotlib==3.7.2
+seaborn==0.12.2
+corner==2.2.2
 
-# dataframes
-pandas>=1.3.2
+# utils
+h5py==3.9.0
+hydra-core==1.3.2
+requests>=2.28.1
+tqdm>=4.65.0
+rich>=13.7.0
 
-# parallel computing 
-# dask-cuda>=23.6.0
-
-# for torch see docs https://pytorch.org/get-started/locally/
-torch==2.0.1+cu118
-torchaudio==2.0.2+cu118
-torchvision==0.15.2+cu118
-
-# logging
-mlflow>=1.23.1
-
-# more ML
-scikit-learn>=0.24.2
-pytorch-lightning>=1.4.7
-# blitz-bayesian-pytorch==0.2.8
-
-# config
-hydra-core>=1.1.2
-
-# others
-requests>=2.26.0
-tqdm>=4.62.2
-netron>=5.3.3
-treelib>=1.6.4
-graphviz==0.20.1
-onnx>=1.14.0
-
-# analysis
+# hep
+mplhep==0.3.31
+uproot==5.1.2
+awkward==2.4.6
 pyhf==0.7.2
+iminuit==2.25.2

@@ -1,0 +1,17 @@
+model_name: MAFMADEMOG
+activation: ReLU
+num_flows: 10
+num_hidden_layers: 2
+hidden_layer_dim: 128
+batchnorm_flow: True
+maf_residuals: True
+conv1x1: True
+res_layers_in_block: 2
+normalization_out: True
+
+# MOG params
+num_hidden_layers_mog_net: 10
+hidden_layer_mog_dim: 128
+n_mixtures: 18
+mog_residuals: True
+res_layers_in_mog_block: 3

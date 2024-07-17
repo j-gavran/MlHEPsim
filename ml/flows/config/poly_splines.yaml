@@ -1,0 +1,17 @@
+model_name: polysplines
+
+activation: ReLU
+num_flows: 10
+num_hidden_layers: 2
+hidden_layer_dim: 128
+batchnorm_flow: True
+conv1x1: False
+res_layers_in_block: 2
+
+u_net: False
+resnet: False
+ar: True
+
+spline_type: quadratic
+bins: 12
+tail_bound: 5.0

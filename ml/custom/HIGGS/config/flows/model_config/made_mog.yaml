@@ -1,0 +1,9 @@
+model_name: MADEMOG
+activation: GELU
+num_hidden_layers_mog_net: 30
+hidden_layer_mog_dim: 512
+n_mixtures: 32
+mog_residuals: True
+res_layers_in_mog_block: 2
+res_batchnorm: False
+act_first: False

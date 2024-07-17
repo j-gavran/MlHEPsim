@@ -1,0 +1,9 @@
+model_name: Glow
+activation: ReLU
+num_flows: 10
+num_hidden_layers: 2
+hidden_layer_dim: 128
+batchnorm: False
+act_first: False
+batchnorm_flow: True
+use_masks: False

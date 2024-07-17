@@ -1,0 +1,12 @@
+model_name: BinaryClassifier
+model: ResMLP
+input_dim: 18
+hidden_dim: [512, 512, 512]
+output_dim: 1
+activation_function: LeakyReLU
+AF_par: 0.0
+dropout: null
+batchnorm: True
+act_first: False
+repeats: 2
+act_out: Sigmoid

@@ -1,0 +1,7 @@
+model_name: MADEMOG
+activation: ReLU
+num_hidden_layers_mog_net: 10
+hidden_layer_mog_dim: 256
+n_mixtures: 18
+mog_residuals: True
+res_layers_in_mog_block: 3

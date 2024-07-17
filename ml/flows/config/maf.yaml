@@ -1,0 +1,10 @@
+model_name: MAF
+activation: ReLU
+num_flows: 10
+num_hidden_layers: 2
+hidden_layer_dim: 128
+batchnorm_flow: True
+made_residuals: True
+res_layers_in_block: 2
+conv1x1: True
+normalization_out: True

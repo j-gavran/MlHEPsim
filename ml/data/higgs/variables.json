@@ -1,0 +1,33 @@
+{
+    "colnames": {
+        "label": "label",
+        "lepton pT": "cont",
+        "lepton eta": "cont",
+        "lepton phi": "uni",
+        "missing energy": "cont",
+        "missing energy phi": "uni",
+        "jet1 pT": "cont",
+        "jet1 eta": "cont",
+        "jet1 phi": "uni",
+        "jet1 btag": "disc",
+        "jet2 pT": "cont",
+        "jet2 eta": "cont",
+        "jet2 phi": "uni",
+        "jet2 btag": "disc",
+        "jet3 pT": "cont",
+        "jet3 eta": "cont",
+        "jet3 phi": "uni",
+        "jet3 btag": "disc",
+        "jet4 pT": "cont",
+        "jet4 eta": "cont",
+        "jet4 phi": "uni",
+        "jet4 btag": "disc",
+        "m jj": "cont",
+        "m jjj": "cont",
+        "m lv": "cont",
+        "m jlv": "cont",
+        "m bb": "cont",
+        "m wbb": "cont",
+        "m wwbb": "cont"
+    }
+}

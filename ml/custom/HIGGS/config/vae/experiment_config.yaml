@@ -1,0 +1,17 @@
+experiment_config:
+  experiment_name: null
+  run_name: null
+  save_dir: ./mlruns
+
+  stage: train
+  model_version: 1
+
+  seed: 0
+  accelerator: gpu
+  device: cuda
+  devices: 1
+
+  log_every_n_steps: 50
+  check_eval_n_epoch: 1
+  num_sanity_val_steps: 0
+  check_metrics_n_epoch: 1

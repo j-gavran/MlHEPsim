@@ -1,0 +1,8 @@
+model_name: RealNVP
+activation: ReLU
+num_flows: 10
+num_hidden_layers: 3
+hidden_layer_dim: 128
+batchnorm: False
+batchnorm_flow: True
+use_masks: False # if True use realNVP with binary masks else use inverse flow

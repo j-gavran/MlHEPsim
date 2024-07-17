@@ -1,0 +1,18 @@
+training_config:
+  learning_rate: 3.e-4
+  epochs: 150
+
+  loss: BCELoss
+
+  optimizer: Adam
+  early_stop_patience: 6
+  weight_decay: 1.e-7
+
+  scheduler:
+    scheduler_name: null
+    interval: step
+    reduce_lr_on_epoch: 1.0
+    scheduler_params:
+      T_0: 642
+      T_mult: 1
+      eta_min: 0

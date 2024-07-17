@@ -11,269 +11,103 @@ Using Machine Learning to Simulate Distributions of Observables at the Large Had
 
 Arxiv link: https://arxiv.org/abs/2310.08994
 
-# Table of contents: 
+## Setup
 
-- [MlHEPsim](#mlhepsim)
-- [Table of contents:](#table-of-contents)
-- [Setup](#setup)
-  - [Setup script](#setup-script)
-  - [Logging](#logging)
-- [Configuration](#configuration)
-- [Running](#running)
-- [Documentation](#documentation)
-  - [Datasets](#datasets)
-  - [Feature rescaling](#feature-rescaling)
-  - [Neural networks](#neural-networks)
-  - [VAEs](#vaes)
-  - [Normalizing flows](#normalizing-flows)
-  - [Statistics](#statistics)
-    - [Tests](#tests)
-    - [Other](#other)
-  - [Plotting](#plotting)
-  - [Using pipeline](#using-pipeline)
-    - [Stage 1 blocks: Model building, training and saving](#stage-1-blocks-model-building-training-and-saving)
-    - [Stage 2 blocks: Model loading, generation and verification](#stage-2-blocks-model-loading-generation-and-verification)
-    - [Stage 3 blocks: Testing](#stage-3-blocks-testing)
-    - [Other blocks](#other-blocks)
-    - [Example: building a pipeline](#example-building-a-pipeline)
-    - [Example: running a prebuilt classifier pipeline](#example-running-a-prebuilt-classifier-pipeline)
-    - [Example: running a prebuilt flow pipeline](#example-running-a-prebuilt-flow-pipeline)
-  - [Analysis setup](#analysis-setup)
-    - [Workflow](#workflow)
-    - [List of analysis blocks](#list-of-analysis-blocks)
-  - [Miscellaneous](#miscellaneous)
-# Setup
+More detailed instructions can be found [here](ml/custom/HIGGS/analysis/README.md).
 
-Clone repository:
-```bash
-git clone https://github.com/j-gavran/MlHEPsim.git
-```
+### Virtual environment configuration
 
-Make virtual environment:
+If you don't want to use Poetry, you can create a standard python virtual environment. In case you don't already have it, install `virtualenv`:
+
 ```bash
 pip install pip --upgrade
 pip install virtualenv
-python3 -m venv ml_hep_sim_env
 ```
-Activate env:
+
+Create a virtual environment:
+
 ```bash
-source ml_hep_sim_env/bin/activate
+python3 -m venv venv
 ```
-Install dependencies:
+
+Activate the virtual environment with:
+
+```bash
+source venv/bin/activate
+```
+
+Install the dependencies with:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-## Setup script
-```bash
-source setup.sh
-```
-Need to change VENV_PATH to your location.
+### Veryfing PyTorch installation
 
-## Logging
-MLflow runs are saved in ```mlruns/``` and can be accesed with:
+```bash
+$ ipython
+Python 3.11.3 (main, May 29 2023, 05:18:21) [GCC 13.1.1 20230520]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 8.15.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: import torch
+
+In [2]: torch.__version__
+Out[2]: '2.0.1+cu118'
+
+In [3]: torch.cuda.is_available()
+Out[3]: True
+
+In [4]: torch.cuda.device_count()
+Out[4]: 1
+
+In [5]: torch.cuda.current_device()
+Out[5]: 0
+
+In [6]: torch.cuda.device(0)
+Out[6]: <torch.cuda.device at 0x7f3348ea1ed0>
+
+In [7]: torch.cuda.get_device_name(0)
+Out[7]: 'NVIDIA GeForce RTX 4090'
+```
+
+## Logging 
+
+### Code logging
+
+A basic logging configuration is set up [here](ml/common/utils/loggers.py). The logger is configured to write to a file in the `logs/` directory. The log file is name is a timestamp. The log level is set to `INFO` by default. Use it like this:
+  
+```python
+from ml.common.loggers import setup_logger
+
+setup_logger(min_level="info")
+```
+and log events in python code using the logging library:
+```python
+import logging
+
+logging.debug("This is a debug message!")
+logging.info("This is an info message!")
+logging.warning("This is a warning message!")
+logging.error("This is an error message!")
+logging.critical("This is a critical message!")
+```
+
+### ML logging
+
+ML logging is done with [MLflow](https://mlflow.org/). It is integrated into the codebase with ```lightning``` and can  be used to log parameters, metrics, and artifacts. The MLflow server is running on ```http://localhost:5000``` by default. To start the server, run:
+
 ```bash
 mlflow ui
 ```
+where port forwarding is done for you by VSCode.
 
-# Configuration
-All model parameters can be set inside yaml files in [ml_hep_sim/conf/](ml_hep_sim/conf/) using Hydra library.
+To delete old runs, use the following command:
 
-# Running
-1. Directly from model files 
-2. Using a pipeline
-
-# Documentation
-
-## Datasets
-- ml_hep_sim/data_utils/toy_datasets.py, collection of 2D point datasets for testing and debugging:
-    ```
-    TOY_DATASETS = ["swissroll", "circles", "rings", "moons", "4gaussians", "8gaussians", "pinwheel", "2spirals", "checkerboard", "line", "cos", "fmf_normal", "fmf_uniform", "einstein"]
-    ```
-- ml_hep_sim/data_utils/mnist, see [preprocess_mnist.py](ml_hep_sim/data_utils/mnist/preprocess_mnist.py) for more info.
-- ml_hep_sim/data_utils/higgs, download and preprocess Higgs dataset:
-    ```bash
-    python3 ml_hep_sim/data_utils/higgs/process_higgs_dataset.py
-    ```
-
-## Feature rescaling
-
-- ml_hep_sim/data_utils/dataset_utils.py, rescale features using one of the following methods:
-    ```
-    - normal: zero mean and unit variance
-    - robust: removes the median and scales the data according to the quantile range
-    - sigmoid: [0, 1] range
-    - tanh: [-1, 1] range
-    - logit: [0, 1] -> [-inf, inf] ranges
-    - logit_normal: [0, 1] -> [-inf, inf] -> normal ranges
-    - Gauss scaler: https://www.kaggle.com/c/porto-seguro-safe-driver-prediction/discussion/44629#250927
-    ```
-
-## Neural networks
-- [Autoencoder](ml_hep_sim/nets/autoencoder.py)
-- [Multi layer perceptron](ml_hep_sim/nets/mlp.py)
-- [Residual networks](ml_hep_sim/nets/resnet.py)
-- [U-net](ml_hep_sim/nets/u_net.py)
-- [Classifiers](ml_hep_sim/nets/classifiers.py)
-  - Binary classifier
-  - Multi label class classifier
-
-## VAEs
-- [Vanilla VAE](ml_hep_sim/vaes/vae.py)
-- [beta-VAE](ml_hep_sim/vaes/beta_vae.py)
-- [sigma-VAE](ml_hep_sim/vaes/sigma_vae.py) 
-- [2-stage VAE](ml_hep_sim/vaes/two_stage_vae.py)
-- [B-VAE](ml_hep_sim/vaes/B_vae.py)
-
-## Normalizing flows 
-- [NICE](ml_hep_sim/normalizing_flows/nice.py)
-- [RealNVP](ml_hep_sim/normalizing_flows/real_nvp.py)
-- [Glow](ml_hep_sim/normalizing_flows/glow.py)
-- [MADEMOG](ml_hep_sim/normalizing_flows/made_mog.py) 
-- [MAF](ml_hep_sim/normalizing_flows/maf.py) 
-- [Polynomial](ml_hep_sim/normalizing_flows/polynomial_splines.py)
-- [Rational quadratic](ml_hep_sim/normalizing_flows/rq_splines.py)
-
-## Statistics
-### Tests
-1. [N-dim tests](ml_hep_sim/stats/n_dim_tests/classifier_test.py)
-   - Classification (train a classifier)
-2. [1-dim tests](ml_hep_sim/stats/one_dim_tests/py_two_sample.py)
-   - Two sample $\chi^2$ test
-   - Kolmogorov-Smirnov test
-
-### Other 
-- pyhf [upper limits](ml_hep_sim/stats/ul.py) and [specs](ml_hep_sim/stats/pyhf_json_specs.py) 
-- [Wasserstein distance](ml_hep_sim/stats/wasserstein.py)
-- [Maximum mean discrepancy](ml_hep_sim/stats/mmd.py)
-- [Statistics plots](ml_hep_sim/stats/stat_plots.py)
-    - Two sample plot
-    - N sample plot
-
-## Plotting
-- [HEP plot](ml_hep_sim/plotting/hep_plots.py) (standard stacked plot)
-- Style (colors, font sizes, etc.)
-- Matplotlib setup (latex)
-
-## Using pipeline
-Roughly, the ML [pipeline](ml_hep_sim/pipeline/pipes.py) consists of 3 stages built out of [blocks](ml_hep_sim/pipeline/blocks.py) holding intermediate results. The blocks are connected to each other in a direct acyclic graph fashion that can be thought of as a compositum of functions. This can be visualized as a tree with a ```draw_pipeline_tree()``` method. The pipeline is run by calling ```fit()``` method after composing all blocks with the ```compose()``` method. The blocks are:
-
-### Stage 1 blocks: Model building, training and saving
-- ConfigBuilderBlock 
-- ModelBuilderBlock
-- DatasetBuilderBlock
-- ModelTrainerBlock
-
-### Stage 2 blocks: Model loading, generation and verification
-- ModelLoaderBlock
-- DataGeneratorBlock
-- GeneratedDataVerifierBlock
-- ClassifierRunnerBlock
-
-### Stage 3 blocks: Testing
-- ReferenceDataLoaderBlock
-- DistanceMetricRunnerBlock
-- PCARunnerBlock
-- StatTestRunnerBlock
-- CouplingModelTestingBlock
-- MADEMOGModelTestingBlock
-- ScalingTestBlock
-
-### Other blocks
-Post stage 3, analysis specific:
-- VariableExtractBlock
-- RatioHighestValuesCutBlock
-- CutBlock
-- CutByIndexBlock
-- RedoRescaleDataBlock
-- GCBlock
-
-### Example: building a pipeline
-Training a HIGGS classifier with default parameters.
-
-```python
-from ml_hep_sim.pipeline.blocks import (
-    ConfigBuilderBlock,
-    DatasetBuilderBlock,
-    ModelBuilderBlock,
-    ModelTrainerBlock,
-)
-from ml_hep_sim.pipeline.distributed_pipes import Pipeline
-
-
-class_train_pipeline = Pipeline(pipeline_name="classifier_train_pipeline", pipeline_path="ml_pipeline/")
-
-x1 = ConfigBuilderBlock(config_path="../conf", config_name="classifier_config", model_name="BinaryClassifier")()
-x2 = ModelBuilderBlock(model_type="other")(x1)
-x3 = DatasetBuilderBlock()(x1)
-x4 = ModelTrainerBlock()(x2, x3)
-
-class_train_pipeline.compose(x1, x2, x3, x4)
-class_train_pipeline.fit().save()
+```bash
+mlflow gc
 ```
 
-### Example: running a prebuilt classifier pipeline
-See [prebuilt directory](ml_hep_sim/pipeline/prebuilt/) for more info.
+## Formatting and linting
 
-```python
-CP = ClassifierPipeline(run_name, override, pipeline_path="ml_pipeline/test/") # all the magic is in the override argument that changes the predefined hydra config in conf/ directory
-
-CP.build_train_pipeline()
-CP.fit(force=True) # if model with this name already exists force training again
-
-CP.build_inference_pipeline(test_dataset) # test classification, e.g. "higgs_bkg"
-
-res = CP.infer(return_results=True) # returns classification scores for test_dataset
-
-class_train_pipeline, class_infer_pipeline = CP.pipeline["train_pipeline"], CP.pipeline["inference_pipeline"]
-```
-
-### Example: running a prebuilt flow pipeline
-Only change is in model_name, which can be any implemented flow model and in N_gen (number of generated events).
-
-```python
-FP = FlowPipeline(run_name, model_name, override, pipeline_path=f"ml_pipeline/test/",)
-
-FP.build_train_pipeline()
-FP.fit(force=True)
-
-FP.build_inference_pipeline(N_gen=10 ** 5) # inference == generation
-
-res = FP.infer(return_results=True) # returns flow generated results
-
-flow_train_pipeline, flow_infer_pipeline = FP.pipeline["train_pipeline"], FP.pipeline["inference_pipeline"]
-```
-
-## Analysis setup
-Most of the script files are also available as jupyter notebooks. The [notebooks](ml_hep_sim/analysis/notebook_pdfs/) are used for analysis and plotting. The ```.py``` files are used for running the analysis in a pipeline. Some quick generator tests are given in ```generators.py```.
-
-### Workflow
-Scripts should generally be run in the following order:
-1. [Generator pipeline](ml_hep_sim/analysis/generator_pipeline.py)
-2. [Cut pipeline](ml_hep_sim/analysis/cut_pipeline.py)
-3. [Histogram pipeline](ml_hep_sim/analysis/hists_pipeline.py)
-4. [Upper limit pipeline](ml_hep_sim/analysis/ul_pipeline.py)
-    - Pull plots ([example pipeline tree](https://github.com/j-gavran/MlHEPsim/blob/9704de7b90bec65da9ff34ecfae7dffe99a3987e/ml_hep_sim/analysis/results/pulls/pull_pipe.png))
-5. [CLs pipeline](ml_hep_sim/analysis/cls_pipeline.py)
-6. [Spurious signal pipeline](ml_hep_sim/analysis/spur_pipeline.py)
-
-### List of analysis blocks 
-- utils.py
-  - SigBkgBlock
-- hists_pipeline.py
-  - MakeHistsFromSamples
-  - MakeHistsFromSamplesLumi
-- ul_pipeline.py
-  - UpperLimitScannerBlock
-  - PullBlock
-- cls_pipeline.py
-  - CLsBlock
-  - CLsBlockResultsParser
-- spur_pipeline.py
-  - SpurBlock
-  - SpurBlockResultsParser
-
-## Miscellaneous
-- [Prebuilt pipelines](ml_hep_sim/pipeline/prebuilt/)
-- [Model testing notebooks](ml_hep_sim/model_testing_notebooks/)
-- [Analysis results plots](ml_hep_sim/analysis/results/)
+Formatting is done with [black](https://github.com/psf/black) and linting with [flake8](https://github.com/PyCQA/flake8). When in VSCode type `Ctrl+Shift+X` to open extensions. Type `@recommended` and install all workspace recommended extensions. To check the settings go to `.vscode/settings.json`.  

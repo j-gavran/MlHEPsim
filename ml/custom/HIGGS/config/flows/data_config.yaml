@@ -1,0 +1,34 @@
+data_config:
+  data_name: HIGGS
+  input_dim: 18
+  base_distribution: normal
+  train_split: 0.8
+  val_split: 0.5
+
+  input_processing:
+    data_dir: ml/data/higgs/
+    base_file_name: HIGGS_data
+    shuffle: True
+    keep_ratio: 1.0
+    hold_mode: True
+    use_hold: True
+    hold_ratio: 0.5
+
+  feature_selection:
+    n_data: null
+    drop_types: [uni, disc]
+    drop_names: []
+    keep_names: null
+    on_train: bkg
+
+  preprocessing:
+    cont_rescale_type: gauss_rank
+    disc_rescale_type: null
+    no_process: [label]
+    # scaler_label: 0
+
+  dataloader_config:
+    batch_size: 1024
+    num_workers: -1
+    pin_memory: False
+    drop_last: True

@@ -170,11 +170,11 @@ def plot_ul_N(results_p, results_p_mc_only, plot_lumi=True, save_dir="ml/custom/
     plt.plot(x, res_gen.cls_obs, zorder=20, color="r", label=r"$\mu$ ML obs")
 
     if plot_lumi:
-        plt.xlabel(r"$N_{ML}$ generated", loc="center")
+        plt.xlabel(r"$N_{\rm ML}$ generated", loc="center")
     else:
         plt.xlabel(r"$N_{ML}$ generated empty", loc="center")
 
-    plt.ylabel(r"UL $\mu$")
+    plt.ylabel(r"$\mu_{\rm UL}$")
 
     plt.xlim(xlim)
     # plt.ylim(top=3.5)
@@ -198,21 +198,233 @@ def plot_ul_N(results_p, results_p_mc_only, plot_lumi=True, save_dir="ml/custom/
     plt.close()
 
 
+def plot_ul_N_money(
+    res5_p,
+    res5_p_mc_only,
+    res10_p,
+    res10_p_mc_only,
+    res20_p,
+    res20_p_mc_only,
+    save_dir="ml/custom/HIGGS/analysis/plots/upper_limits",
+):
+    mkdir(save_dir)
+
+    results_dct20 = pickle.load(open(res20_p, "rb"))
+    results_dct_mc_only20 = pickle.load(open(res20_p_mc_only, "rb"))
+
+    res_gen = results_dct20["df"]
+    res_mc = results_dct_mc_only20["df"]
+
+    x = res_gen["lumi"]
+    xlim = (x.iloc[0], x.iloc[-1])
+
+    plt.plot(x, np.zeros(len(x)), c="k", ls="--", zorder=2)
+
+    y = -res_mc.cls_exp
+
+    plt.fill_between(x, y + res_mc.minus_sigma_2, y + res_mc.plus_sigma_2, color="C2", alpha=0.3)
+    plt.plot(
+        x,
+        res_gen.cls_obs - res_mc.cls_obs,
+        zorder=20,
+        color="C2",
+        label=r"$\Delta \mu_{\rm UL} \pm 2\sigma$ (sys=20%)",
+    )
+
+    results_dct10 = pickle.load(open(res10_p, "rb"))
+    results_dct_mc_only10 = pickle.load(open(res10_p_mc_only, "rb"))
+
+    res_gen = results_dct10["df"]
+    res_mc = results_dct_mc_only10["df"]
+
+    y = -res_mc.cls_exp
+
+    plt.fill_between(x, y + res_mc.minus_sigma_2, y + res_mc.plus_sigma_2, color="C1", alpha=0.3)
+
+    plt.plot(
+        x,
+        res_gen.cls_obs - res_mc.cls_obs,
+        zorder=20,
+        color="C1",
+        label=r"$\Delta \mu_{\rm UL} \pm 2\sigma$ (sys=10%)",
+    )
+
+    results_dct5 = pickle.load(open(res5_p, "rb"))
+    results_dct_mc_only5 = pickle.load(open(res5_p_mc_only, "rb"))
+
+    res_gen = results_dct5["df"]
+    res_mc = results_dct_mc_only5["df"]
+
+    y = -res_mc.cls_exp
+
+    plt.fill_between(x, y + res_mc.minus_sigma_2, y + res_mc.plus_sigma_2, color="C0", alpha=0.3)
+    plt.plot(
+        x,
+        res_gen.cls_obs - res_mc.cls_obs,
+        zorder=20,
+        color="C0",
+        label=r"$\Delta \mu_{\rm UL} \pm 2\sigma$ (sys=5%)",
+    )
+
+    plt.xlabel(r"$N_{\rm ML}$ generated", loc="center")
+
+    plt.ylabel(r"$\Delta$($\mu_{\rm UL}$)")
+
+    plt.xlim(xlim)
+    # plt.ylim(top=3.5)
+    plt.xscale("log")
+
+    sig_frac = 5.00
+    plt.title(f"Signal fraction: {sig_frac:.2f} %", fontsize=15)
+
+    logging.info("Saving upper money limit plot!")
+
+    save_str = f"{save_dir}/"
+
+    save_str += res5_p.split("/")[-1]
+    save_str = save_str.replace(".p", "")
+    save_str = save_str.replace("_df", "")
+
+    save_str += "_NB_mon"  # log/lin
+
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f"{save_str}.pdf")
+    plt.close()
+
+
+def plot_ul_N_money2(
+    res5_p,
+    res5_p_mc_only,
+    res10_p,
+    res10_p_mc_only,
+    res20_p,
+    res20_p_mc_only,
+    save_dir="ml/custom/HIGGS/analysis/plots/upper_limits",
+):
+    mkdir(save_dir)
+
+    results_dct20 = pickle.load(open(res20_p, "rb"))
+    results_dct_mc_only20 = pickle.load(open(res20_p_mc_only, "rb"))
+
+    res_gen = results_dct20["df"]
+    res_mc = results_dct_mc_only20["df"]
+
+    x = res_gen["lumi"]
+    xlim = (x.iloc[0], x.iloc[-1])
+
+    y = res_gen.cls_obs - res_mc.cls_exp
+
+    plt.fill_between(x, y + res_mc.minus_sigma_2, y + res_mc.plus_sigma_2, color="C2", alpha=0.3)
+    plt.plot(
+        x,
+        res_gen.cls_obs,
+        zorder=20,
+        color="C2",
+        label=r"$\mu_{\rm UL}(\rm{ML}) \pm 2\sigma$ (sys=20%)",
+    )
+    plt.plot(
+        x,
+        res_mc.cls_obs,
+        zorder=10,
+        ls="--",
+        color="C2",
+        label=r"$\mu_{\rm UL}({\rm MC}) \pm 2\sigma$ (sys=20%)",
+    )
+
+    results_dct10 = pickle.load(open(res10_p, "rb"))
+    results_dct_mc_only10 = pickle.load(open(res10_p_mc_only, "rb"))
+
+    res_gen = results_dct10["df"]
+    res_mc = results_dct_mc_only10["df"]
+
+    y = res_gen.cls_obs - res_mc.cls_exp
+
+    plt.fill_between(x, y + res_mc.minus_sigma_2, y + res_mc.plus_sigma_2, color="C1", alpha=0.3)
+
+    plt.plot(
+        x,
+        res_gen.cls_obs,
+        zorder=20,
+        color="C1",
+        label=r"$\Delta \mu_{\rm UL}({\rm ML}) \pm 2\sigma$ (sys=10%)",
+    )
+    plt.plot(
+        x,
+        res_mc.cls_obs,
+        zorder=10,
+        ls="--",
+        color="C1",
+        label=r"$\mu_{\rm UL}({\rm MC}) \pm 2\sigma$ (sys=10%)",
+    )
+
+    results_dct5 = pickle.load(open(res5_p, "rb"))
+    results_dct_mc_only5 = pickle.load(open(res5_p_mc_only, "rb"))
+
+    res_gen = results_dct5["df"]
+    res_mc = results_dct_mc_only5["df"]
+
+    y = res_gen.cls_obs - res_mc.cls_exp
+
+    plt.fill_between(x, y + res_mc.minus_sigma_2, y + res_mc.plus_sigma_2, color="C0", alpha=0.3)
+    plt.plot(
+        x,
+        res_gen.cls_obs,
+        zorder=20,
+        color="C0",
+        label=r"$\mu_{\rm UL}({\rm ML})  \pm 2\sigma$ (sys=5%)",
+    )
+    plt.plot(
+        x,
+        res_mc.cls_obs,
+        zorder=10,
+        ls="--",
+        color="C0",
+        label=r"$\mu_{\rm UL}({\rm MC}) \pm 2\sigma$ (sys=5%)",
+    )
+
+    plt.xlabel(r"$N_{\rm ML}$ generated", loc="center")
+
+    plt.ylabel(r"$\Delta$($\mu_{\rm UL}$)")
+
+    plt.xlim(xlim)
+    # plt.ylim(top=3.5)
+    plt.xscale("log")
+
+    sig_frac = 5.00
+    plt.title(f"Signal fraction: {sig_frac:.2f} %", fontsize=15)
+
+    logging.info("Saving upper money2 limit plot!")
+
+    save_str = f"{save_dir}/"
+
+    save_str += res5_p.split("/")[-1]
+    save_str = save_str.replace(".p", "")
+    save_str = save_str.replace("_df", "")
+
+    save_str += "_NB_mon2"  # log/lin
+
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f"{save_str}.pdf")
+    plt.close()
+
+
 if __name__ == "__main__":
     setup_logger()
     set_size()
     style_setup()
 
-    run = True  # False for plots only
+    run = False  # False for plots only
 
-    cut_variable = "m bb"
+    cut_variable = False  # "m bb"
 
     if cut_variable == "m bb":
         bin_range = (0.0, 3.0)
     else:
         bin_range = (0.55, 1.0)
 
-    sys_err = 0.2
+    sys_err = 0.1
     sig_frac = 0.05
 
     N_gen_lst = np.logspace(4, 6, 30).astype(int)  # think about optimizing!!
@@ -274,4 +486,40 @@ if __name__ == "__main__":
         # results_p="ml/data/higgs/upper_limit_N_df_m bb_5.00_sys_err_5.00.p",
         # results_p_mc_only="ml/data/higgs/upper_limit_N_df_m bb_mc_only_5.00_sys_err_5.00.p",
         plot_lumi=True,
+    )
+
+    # plot_ul_N_money(
+    #     res5_p="ml/data/higgs/upper_limit_N_df_m bb_5.00_sys_err_5.00.p",
+    #     res5_p_mc_only="ml/data/higgs/upper_limit_N_df_m bb_mc_only_5.00_sys_err_5.00.p",
+    #     res10_p="ml/data/higgs/upper_limit_N_df_m bb_5.00_sys_err_10.00.p",
+    #     res10_p_mc_only="ml/data/higgs/upper_limit_N_df_m bb_mc_only_5.00_sys_err_10.00.p",
+    #     res20_p="ml/data/higgs/upper_limit_N_df_m bb_5.00_sys_err_20.00.p",
+    #     res20_p_mc_only="ml/data/higgs/upper_limit_N_df_m bb_mc_only_5.00_sys_err_20.00.p",
+    # )
+
+    # plot_ul_N_money2(
+    #     res5_p="ml/data/higgs/upper_limit_N_df_m bb_5.00_sys_err_5.00.p",
+    #     res5_p_mc_only="ml/data/higgs/upper_limit_N_df_m bb_mc_only_5.00_sys_err_5.00.p",
+    #     res10_p="ml/data/higgs/upper_limit_N_df_m bb_5.00_sys_err_10.00.p",
+    #     res10_p_mc_only="ml/data/higgs/upper_limit_N_df_m bb_mc_only_5.00_sys_err_10.00.p",
+    #     res20_p="ml/data/higgs/upper_limit_N_df_m bb_5.00_sys_err_20.00.p",
+    #     res20_p_mc_only="ml/data/higgs/upper_limit_N_df_m bb_mc_only_5.00_sys_err_20.00.p",
+    # )
+
+    plot_ul_N_money(
+        res5_p="ml/data/higgs/upper_limit_N_df_5.00_sys_err_5.00.p",
+        res5_p_mc_only="ml/data/higgs/upper_limit_N_df_mc_only_5.00_sys_err_5.00.p",
+        res10_p="ml/data/higgs/upper_limit_N_df_5.00_sys_err_10.00.p",
+        res10_p_mc_only="ml/data/higgs/upper_limit_N_df_mc_only_5.00_sys_err_10.00.p",
+        res20_p="ml/data/higgs/upper_limit_N_df_5.00_sys_err_20.00.p",
+        res20_p_mc_only="ml/data/higgs/upper_limit_N_df_mc_only_5.00_sys_err_20.00.p",
+    )
+
+    plot_ul_N_money2(
+        res5_p="ml/data/higgs/upper_limit_N_df_5.00_sys_err_5.00.p",
+        res5_p_mc_only="ml/data/higgs/upper_limit_N_df_mc_only_5.00_sys_err_5.00.p",
+        res10_p="ml/data/higgs/upper_limit_N_df_5.00_sys_err_10.00.p",
+        res10_p_mc_only="ml/data/higgs/upper_limit_N_df_mc_only_5.00_sys_err_10.00.p",
+        res20_p="ml/data/higgs/upper_limit_N_df_5.00_sys_err_20.00.p",
+        res20_p_mc_only="ml/data/higgs/upper_limit_N_df_mc_only_5.00_sys_err_20.00.p",
     )

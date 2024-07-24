@@ -67,7 +67,7 @@ class FitMLE_N(FitSetup):
 
         return self.bestfits
 
-    def plot_poi(self, label="", clip_yerr=0.2):
+    def plot_poi(self, label="", clip_yerr=1.2):
         fig, ax = plt.subplots(1, 1)
 
         ax.plot(self.bestfits["lumi"], self.bestfits["mu"])
@@ -95,7 +95,7 @@ class FitMLE_N(FitSetup):
         else:
             ax.axhline(1, color="r", linestyle="--", label="Best match")
 
-        ax.set_xlabel(r"$N_{ML}$ generated")
+        ax.set_xlabel(r"$N_{\rm ML}$ generated")
         ax.set_ylabel(r"$\mu$" + f" {label}")
         ax.legend()
 
@@ -154,7 +154,7 @@ class FitMLE_N(FitSetup):
             markersize=6,
         )
 
-        ax.set_xlabel(r"$N_{ML}$ generated")
+        ax.set_xlabel(r"$N_{\rm ML}$ generated")
 
         if rel:
             ax.set_ylabel(r"$\frac{1}{S}(\mu S - S)$" + f"  {label} [%]", fontsize=15)
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     matplotlib.rcParams.update({"errorbar.capsize": 3})
 
     # mc_only, bkg_only = True, True
-    mc_only, bkg_only = False, False
+    mc_only, bkg_only = True, False
     cut_variable = False
 
     if cut_variable == "m bb":
@@ -308,6 +308,7 @@ if __name__ == "__main__":
         cut_variable=cut_variable,
         bin_range=bin_range,
         n_bins=25,
+        cache_dir="ml/data/higgs/mle_N",
     )
 
     bestfits = mle_fit.mle_fit()
@@ -316,8 +317,8 @@ if __name__ == "__main__":
 
     mle_fit.plot_poi(label=f"at {sig_frac*100}% sig fraction")
 
-    mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=True)
-    mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=False)
+    # mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=True)
+    # mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=False)
 
     mle_fit.plot_fit(lumi_idx=9, postfit=True, label=f"_{sig_frac}")
     mle_fit.plot_fit(lumi_idx=9, postfit=False, label=f"_{sig_frac}")

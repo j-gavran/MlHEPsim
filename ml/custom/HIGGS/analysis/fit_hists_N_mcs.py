@@ -390,9 +390,16 @@ if __name__ == "__main__":
     expected_bkg = None  # 37000
     expected_sig = None  # 100
 
-    N_gen = 10**4
+    N_gen = 10**6
     N_mc_bkg = 10**5
     sig_frac = 0.05
+
+    cut_variable = "m bb"  # False
+
+    if cut_variable == "m bb":
+        bin_range = (0.0, 3.0)
+    else:
+        bin_range = (0.55, 1.0)
 
     hist_maker.setup(
         N_gen_bkg=N_gen,
@@ -400,12 +407,12 @@ if __name__ == "__main__":
         N_mc_sig=10**6,  # MC statistics
         N_data_sig=int(N_mc_bkg * sig_frac),  # expected_sig,
         cut_threshold=0.55,
-        cut_variable=False,
+        cut_variable=cut_variable,
         use_weights=False,
         mc_only=True,  # org. False
         bkg_only=False,  # org. False
         n_bins=25,
-        bin_range=(0.55, 1),
+        bin_range=bin_range,
         bkg_xsec=1 * 1000,  # fb
     )
     hist_maker.make_fit_input(

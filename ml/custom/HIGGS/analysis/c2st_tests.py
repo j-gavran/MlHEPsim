@@ -115,11 +115,12 @@ class C2stOutTests:
         plt.figure(figsize=(8, 6))
 
         _, b, _ = plt.hist(c2st_X, bins=n_bins, label="MC c2st", histtype="step", lw=2, density=True, range=bin_range)
-        plt.hist(c2st_Y, bins=b, label="gen c2st", histtype="step", lw=2, density=True)
+        plt.hist(c2st_Y, bins=b, label="ML c2st", histtype="step", lw=2, density=True)
 
         plt.xlim(bin_range)
 
-        plt.xlabel("C sigmoid output")
+        # plt.xlabel("C sigmoid output")
+        plt.xlabel("r(x)")
         plt.ylabel("density [a.u.]")
 
         plt.axvline(self.center, color="black", linestyle="-", lw=2, alpha=0.2)
@@ -150,21 +151,21 @@ class C2stOutTests:
         if weights:
             plt.hist(ratio_base, bins=100, histtype="step", range=bin_range, density=True, lw=2, label="MC ratio")
 
-        plt.hist(ratio, bins=100, histtype="step", range=bin_range, density=True, lw=2, label="gen ratio")
+        plt.hist(ratio, bins=100, histtype="step", range=bin_range, density=True, lw=2, label="ML  ratio")
 
         plt.xlim(bin_range)
 
         self._plot_cuts(center=1.0)
 
         if weights:
-            plt.xlabel("exp(logit(C))")
+            plt.xlabel("r(x)")
         else:
-            plt.xlabel("c2st gen / c2st MC")
+            plt.xlabel("c2st ML / c2st MC")
 
         plt.ylabel("density [a.u.]")
 
         if weights:
-            plt.legend(["MC c2st", "gen c2st", "tail cut"], loc="upper right")
+            plt.legend(["MC c2st", "ML c2st", "tail cut"], loc="upper right")
 
         if log_scale:
             plt.yscale("log")
@@ -215,7 +216,7 @@ class C2stOutTests:
         labels_map = list(LABELS_MAP.values())
 
         Y_masked_left_right = [Y_masked_left, Y_maksed_right]
-        labels = [f"gen tail cut $<$ {self.threshold_left}", f"gen tail cut $>$ {self.threshold_right}"]
+        labels = [f"ML tail cut $<$ {self.threshold_left}", f"ML tail cut $>$ {self.threshold_right}"]
 
         for i, ax in enumerate(axs):
             _, bins, _ = ax.hist(
@@ -258,14 +259,16 @@ if __name__ == "__main__":
     style_setup()
 
     c2st_out_tester = C2stOutTests(
-        select_model="MADEMOG_flow_model_gauss_rank",
+        select_model="MADEMOG_flow_model_gauss_rank_best",
         cont_rescale_type="gauss_rank",
         N=2 * 10**6,
     )
 
     c2st_out_tester.set_thresholds(
-        threshold_left=0.8,
-        threshold_right=1.14,
+        threshold_left=0.94,
+        threshold_right=1.08,
+        # threshold_left=0.8,
+        # threshold_right=1.14,
     )
 
     # stat. tests
@@ -284,6 +287,7 @@ if __name__ == "__main__":
 
     c2st_out_tester.plot_c2st_outputs(bin_range=(0.4, 0.6))
 
-    c2st_out_tester.plot_c2st_ratio(weights=True, log_scale=False, bin_range=(0.7, 1.3))
+    # c2st_out_tester.plot_c2st_ratio(weights=True, log_scale=False, bin_range=(0.7, 1.3))
+    c2st_out_tester.plot_c2st_ratio(weights=True, log_scale=False, bin_range=(0.8, 1.2))
 
     c2st_out_tester.plot_c2st_tails(weights=True, log_scale=False)

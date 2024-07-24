@@ -173,7 +173,7 @@ def plot_ul(results_p, results_p_mc_only, plot_lumi=True, save_dir="ml/custom/HI
     else:
         plt.xlabel(r"$N$ events in data", loc="center")
 
-    plt.ylabel(r"UL $\mu$")
+    plt.ylabel(r"$\mu_{\rm UL}$")
 
     plt.xlim(xlim)
     # plt.ylim(top=3.5)
@@ -201,11 +201,11 @@ if __name__ == "__main__":
     set_size()
     style_setup()
 
-    run = True  # False for plots
+    run = False  # False for plots
 
     # mc_only = False # or True, need both...
 
-    cut_variable = "m bb"
+    cut_variable = "m bb"  # False
 
     if cut_variable == "m bb":
         bin_range = (0.0, 3.0)
@@ -264,8 +264,13 @@ if __name__ == "__main__":
 
         print(scan2.scan_upper_limits())
 
-        plot_ul(
-            results_p="ml/data/higgs/upper_limit_df_m bb_5.00_sys_err_10.00.p",
-            results_p_mc_only="ml/data/higgs/upper_limit_df_m bb_mc_only_5.00_sys_err_10.00.p",
-            plot_lumi=True,
-        )
+    plot_ul(
+        results_p="ml/data/higgs/upper_limit_df_m bb_5.00_sys_err_10.00.p",
+        results_p_mc_only="ml/data/higgs/upper_limit_df_m bb_mc_only_5.00_sys_err_10.00.p",
+        plot_lumi=True,
+    )
+    # plot_ul(
+    #     results_p="ml/data/higgs/upper_limit_df_5.00_sys_err_10.00.p",
+    #     results_p_mc_only="ml/data/higgs/upper_limit_df_mc_only_5.00_sys_err_10.00.p",
+    #     plot_lumi=True,
+    # )

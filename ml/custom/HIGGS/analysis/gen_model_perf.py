@@ -118,7 +118,7 @@ def N_sample_plot(
                 axs[f].set_ylabel("$N$")
 
             if f == 0 and label is not None:
-                axs[f].legend(["MC"] + label, fontsize=8)
+                axs[f].legend(["MC"] + label, fontsize=14)
 
             if labels is not None:
                 axs[f].set_xlabel(labels[f], size=20)
@@ -186,7 +186,7 @@ def binned_perf_plot(
             )
 
             if f == 0:
-                axs[f].legend(loc="upper left", fontsize=10)
+                axs[f].legend(loc="upper left", fontsize=14)
 
             if c == 0:
                 axs[f].axhline(1, color="k", ls="--", lw=1)
@@ -421,7 +421,7 @@ if __name__ == "__main__":
         # "MAF_flow_model_gauss_rank",
         # "MAFMADEMOG_flow_model_gauss_rank",
         "MADEMOG_flow_model_gauss_rank_best",
-        "MADEMOG_flow_model_gauss_rank_mini",  # 10 layers with 2x512 nodes
+        # "MADEMOG_flow_model_gauss_rank_mini",  # 10 layers with 2x512 nodes
     ]
 
     # highr interp_limit and smaller epsilon -> better histograms in the tails
@@ -442,7 +442,7 @@ if __name__ == "__main__":
 
     # plot settings
     select_outliers = None  # "inside"
-    log_scale = True
+    log_scale = True  # false for correct shape plot !
     use_bin_range = True
     plot_corr = False
 

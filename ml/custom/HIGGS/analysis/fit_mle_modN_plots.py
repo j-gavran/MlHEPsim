@@ -19,7 +19,7 @@ from ml.common.utils.plot_utils import (
     step_hist_plot,
     style_setup,
 )
-from ml.custom.HIGGS.analysis.fit_pyhf import FitSetup
+from ml.custom.HIGGS.analysis.fit_pyhf_N import FitSetup
 from ml.custom.HIGGS.analysis.utils import LABELS_MAP
 
 
@@ -77,7 +77,7 @@ class FitMLE(FitSetup):
         if self.cut_variable:
             label += f"_cut_{self.cut_variable}"
 
-        label += "_B"
+        label += "_Bmod"
 
         label = label.replace(" ", "_")
         logging.info(f"Saving mle bestfit data to {label}.p")
@@ -91,12 +91,78 @@ class FitMLE(FitSetup):
 
         return self.bestfits
 
-    def plot_poi(self, label="", clip_yerr=0.2):
+    def plot_poi_money(self, label="", clip_yerr=1.2, mc_file="", ml_file=""):
+
+        mc_dct = pickle.load(open(f"{self.save_dir}/{mc_file}", "rb"))
+        ml_dct = pickle.load(open(f"{self.save_dir}/{ml_file}", "rb"))
+        bestfits = mc_dct["df"]
+        bestfits_ML = ml_dct["df"]
+
+        x = bestfits["lumi"]
+        xlim = (x.iloc[0], x.iloc[-1])
+        y = bestfits_ML["mu"].to_numpy()
+        # yerr = bestfits["mu_err"].to_numpy()
+        yerr = bestfits_ML["mu_err"].to_numpy()
+        try:
+            yerr[yerr > clip_yerr] = np.max(yerr[yerr < clip_yerr])
+        except ValueError:
+            pass
+
+        plt.plot(x, np.ones(len(x)), c="r", ls="--", zorder=2, label="Best match")
+
+        plt.fill_between(x, y - yerr, y + yerr, color="C2", alpha=0.3)
+        plt.plot(
+            x,
+            y,
+            zorder=20,
+            color="C2",
+            label=r"$\mu_{\rm ML}$",
+        )
+
+        plt.xlabel(r"L [fb$^{-1}$]")
+
+        plt.ylabel(r"$\mu$" + f" {label}")
+
+        plt.xlim(xlim)
+        plt.ylim(top=1.5, bottom=0.5)
+        plt.xscale("log")
+
+        # sig_frac = 5.00
+        # plt.title(f"Signal fraction: {sig_frac:.2f} %", fontsize=15)
+
+        plt.legend()
+        plt.tight_layout()
+
+        logging.info("Saving mu money plot!")
+
+        if self.mc_only:
+            label += "_mc_only"
+
+        if self.bkg_only:
+            label += "_bkg_only"
+
+        if self.cut_variable:
+            label += f"_cut_{self.cut_variable}"
+
+        label += "_Bmod_mon"
+
+        label = label.replace(" ", "_")
+        plt.savefig(f"{self.save_dir}/mu_lumi_{label}.pdf")
+        plt.close()
+
+    def plot_poi(self, label="", clip_yerr=1.2, save_file=""):
+
+        if save_file:
+            results_dct = pickle.load(open(f"{self.save_dir}/{save_file}", "rb"))
+            bestfits = results_dct["df"]
+        else:
+            bestfits = self.bestfits
+
         fig, ax = plt.subplots(1, 1)
 
-        ax.plot(self.bestfits["lumi"], self.bestfits["mu"])
+        ax.plot(bestfits["lumi"], bestfits["mu"])
 
-        yerr = self.bestfits["mu_err"].to_numpy()
+        yerr = bestfits["mu_err"].to_numpy()
 
         try:
             yerr[yerr > clip_yerr] = np.max(yerr[yerr < clip_yerr])
@@ -105,10 +171,10 @@ class FitMLE(FitSetup):
 
         errorbar_plot(
             ax,
-            x=self.bestfits["lumi"],
-            y=self.bestfits["mu"],
+            x=bestfits["lumi"],
+            y=bestfits["mu"],
             xerr=None,
-            yerr=self.bestfits["mu_err"],
+            yerr=bestfits["mu_err"],
             label="Fit bkg only" if self.bkg_only else "Fit",
             color="C0",
             markersize=6,
@@ -124,7 +190,7 @@ class FitMLE(FitSetup):
         ax.legend()
 
         ax.set_xscale("log")
-        ax.set_xlim((self.bestfits["lumi"].min(), self.bestfits["lumi"].max() + 50))
+        ax.set_xlim((bestfits["lumi"].min(), bestfits["lumi"].max() + 50))
 
         logging.info("Saving mu_lumi plot!")
 
@@ -137,7 +203,7 @@ class FitMLE(FitSetup):
         if self.cut_variable:
             label += f"_cut_{self.cut_variable}"
 
-        label += "_B"
+        label += "_Bmod"
 
         fig.tight_layout()
         label = label.replace(" ", "_")
@@ -203,7 +269,7 @@ class FitMLE(FitSetup):
         if rel:
             label += "_rel"
 
-        label += "_B"
+        label += "_Bmod"
 
         fig.tight_layout()
         label = label.replace(" ", "_")
@@ -283,8 +349,7 @@ class FitMLE(FitSetup):
         save_str += label if label != "" else ""
         save_str += f"_{lumi:.1f}fb"
         save_str.replace(" ", "_")
-        save_str += "_B"  # BPK extra label
-
+        save_str += "_Bmod"
         if postfit:
             logging.info(f"Saving post-fit plot for lumi {lumi:.3f} fb^-1")
         else:
@@ -302,7 +367,7 @@ if __name__ == "__main__":
 
     # mc_only, bkg_only = True, True
     mc_only, bkg_only = False, False
-    cut_variable = False  # "m bb"  # False
+    cut_variable = "m bb"  # False
 
     if cut_variable == "m bb":
         bin_range = (0.0, 3.0)
@@ -324,6 +389,7 @@ if __name__ == "__main__":
 
     mle_fit.setup_templates(
         N_gen=10**6,
+        # N_gen=100000,
         N_mc_bkg_lst=N_mc_bkg_lst,
         N_data_sig_lst=N_data_sig_lst,
         scale_mc_sig=True,
@@ -332,17 +398,32 @@ if __name__ == "__main__":
         cut_variable=cut_variable,
         bin_range=bin_range,
         n_bins=25,
-        cache_dir="ml/data/higgs/mle",
+        cache_dir="ml/data/higgs/mle_modN",
     )
 
-    bestfits = mle_fit.mle_fit()
+    run = False
 
-    print(bestfits)
+    if run:
+        bestfits = mle_fit.mle_fit()
 
-    mle_fit.plot_poi(label=f"at {sig_frac*100}% sig fraction")
+        print(bestfits)
 
-    mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=True)
-    mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=False)
+        mle_fit.plot_poi(label=f"at {sig_frac*100}% sig fraction")
 
-    mle_fit.plot_fit(lumi_idx=11, postfit=True, label=f"_{sig_frac}")
-    mle_fit.plot_fit(lumi_idx=11, postfit=False, label=f"_{sig_frac}")
+        # mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=True)
+        # mle_fit.plot_spur(label=f"at {sig_frac*100}% sig fraction", rel=False)
+
+        mle_fit.plot_fit(lumi_idx=9, postfit=True, label=f"_{sig_frac}")
+        mle_fit.plot_fit(lumi_idx=9, postfit=False, label=f"_{sig_frac}")
+    else:
+        mle_fit.plot_poi(label=f"at {sig_frac*100}% sig fraction", save_file="mle_mc_only_Bmod.p")
+        # mle_fit.plot_poi_money(
+        #     label=f"at {sig_frac*100}% sig fraction", mc_file="mle_mc_only_N.p", ml_file="mle_Bmod.p"
+        # )
+        # mle_fit.plot_poi_money(
+        #     label=f"at {sig_frac*100}% sig fraction", mc_file="mle_mc_only_Bmod.p", ml_file="mle_B.p"
+        # )
+
+        mle_fit.plot_poi_money(
+            label=f"at {sig_frac*100}% sig fraction", mc_file="mle_mc_only_cut_m_bb_Bmod.p", ml_file="mle_cut_m_bb_B.p"
+        )

@@ -113,6 +113,8 @@ class FitMLE(FitSetup):
         if self.cut_variable:
             label += f"_cut_{self.cut_variable}"
 
+        label += "_Bmod"
+
         fig.tight_layout()
         label = label.replace(" ", "_")
         plt.savefig(f"{self.save_dir}/mu_lumi_{label}.pdf")
@@ -176,6 +178,8 @@ class FitMLE(FitSetup):
 
         if rel:
             label += "_rel"
+
+        label += "_Bmod"
 
         fig.tight_layout()
         label = label.replace(" ", "_")
@@ -272,7 +276,7 @@ if __name__ == "__main__":
     matplotlib.rcParams.update({"errorbar.capsize": 3})
 
     # mc_only, bkg_only = True, True
-    mc_only, bkg_only = False, False
+    mc_only, bkg_only = True, False
     cut_variable = False
 
     if cut_variable == "m bb":
@@ -304,6 +308,7 @@ if __name__ == "__main__":
         cut_variable=cut_variable,
         bin_range=bin_range,
         n_bins=25,
+        cache_dir="ml/data/higgs/mle_modN",
     )
 
     bestfits = mle_fit.mle_fit()

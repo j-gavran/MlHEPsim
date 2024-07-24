@@ -170,8 +170,8 @@ class Cut(ABC):
 
         auc, auc_gen = metrics.auc(fpr, tpr), metrics.auc(fpr_gen, tpr_gen)
 
-        plt.plot(fpr, tpr, lw=2, label=f"bkg vs sig: AUC = {auc:.4f}, ACC ={acc:.4f}")
-        plt.plot(fpr_gen, tpr_gen, lw=2, label=f"flow generated vs sig: AUC = {auc_gen:.4f}, ACC ={acc_gen:.4f}")
+        plt.plot(fpr, tpr, lw=2, label=f"MC bkg vs sig: AUC = {auc:.4f}, ACC ={acc:.4f}")
+        plt.plot(fpr_gen, tpr_gen, lw=2, label=f"ML  vs MC sig: AUC = {auc_gen:.4f}, ACC ={acc_gen:.4f}")
 
         plt.plot([0, 1], [0, 1], "k--", lw=2)
 
@@ -355,7 +355,7 @@ class ClassifierCut(Cut):
             bins=n_bins,
             histtype="step",
             lw=1,
-            label="bkg",
+            label="MC bkg",
             density=density,
             range=bin_range,
         )
@@ -364,7 +364,7 @@ class ClassifierCut(Cut):
             bins=bins,
             histtype="step",
             lw=1,
-            label="sig",
+            label="MC sig",
             density=density,
         )
         ml_bkg, _, _ = ax.hist(
@@ -372,14 +372,14 @@ class ClassifierCut(Cut):
             bins=bins,
             histtype="step",
             lw=1,
-            label="flow generated",
+            label="ML generated",
             density=density,
         )
 
         if cut_threshold is not None:
             ax.axvline(cut_threshold, color="r", linestyle="--", lw=2, label="cut")
 
-        ax.set_xlabel("classifier output")
+        ax.set_xlabel("classifier score")
         ax.set_ylabel("density [a.u.]")
 
         ax.set_xlim(bin_range)
@@ -397,14 +397,15 @@ class ClassifierCut(Cut):
 
         # plot ratio
         fig, ax = plt.subplots(1, 1)
-        plt.plot(bins[:-1], mc_bkg / ml_bkg, lw=2, label="bkg / flow generated")
+        plt.plot(bins[:-1], mc_bkg / ml_bkg, lw=2, label="MC / ML generated")
 
         ax.axhline(1, color="r", linestyle="--", lw=2, label="ratio = 1")
 
-        ax.set_xlabel("classifier output")
-        ax.set_ylabel("bkg / flow generated")
+        ax.set_xlabel("classifier score")
+        ax.set_ylabel("MC / ML ")
 
         ax.set_xlim(bin_range)
+        ax.set_ylim(bottom=0.5, top=1.5)
         ax.legend()
 
         fig.tight_layout()
@@ -457,7 +458,9 @@ class ClassifierCut(Cut):
 
     def plot_after_cut(self, n_bins=70):
         colors = ["C0", "C1", "C2"]
-        return super().plot_after_cut(n_bins, legend=["bkg", "sig", "flow generated"], postfix="_classifier", cs=colors)
+        return super().plot_after_cut(
+            n_bins, legend=["MC bkg", "MC sig", "ML generated"], postfix="_classifier", cs=colors
+        )
 
     def plot_roc_acc(self, cut_threshold=0.5, M=-1):
         return super().plot_roc_acc(self.classifier_samples_dct, cut_threshold, M, postfix="_classifier")
@@ -529,7 +532,7 @@ class FlowCut(Cut):
             bins=n_bins,
             histtype="step",
             lw=2,
-            label="bkg",
+            label="MC bkg",
             density=True,
             range=bin_range,
         )
@@ -538,7 +541,7 @@ class FlowCut(Cut):
             bins=n_bins,
             histtype="step",
             lw=2,
-            label="sig",
+            label="MC sig",
             density=True,
             range=bin_range,
         )
@@ -547,12 +550,12 @@ class FlowCut(Cut):
             bins=n_bins,
             histtype="step",
             lw=2,
-            label="flow generated",
+            label="ML generated",
             density=True,
             range=bin_range,
         )
 
-        ax.set_xlabel("flow log density", loc="left" if use_sigmoid else "right")
+        ax.set_xlabel("ML log density", loc="left" if use_sigmoid else "right")
         ax.set_ylabel("density [a.u.]")
 
         if cut_thereshold is not None:
@@ -612,7 +615,7 @@ class FlowCut(Cut):
 
     def plot_after_cut(self, n_bins=70):
         colors = ["C2", "C0", "C1"]
-        return super().plot_after_cut(n_bins, legend=["flow generated", "bkg", "sig"], postfix="_flow", cs=colors)
+        return super().plot_after_cut(n_bins, legend=["ML generated", "MC bkg", "MC sig"], postfix="_flow", cs=colors)
 
     def plot_roc_acc(self, cut_threshold=0.5, M=-1):
         return super().plot_roc_acc(self.density_dct, cut_threshold, M, postfix="_flow", use_sigmoid=True)

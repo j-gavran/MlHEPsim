@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 import pyhf
 
+from ml.common.utils.picklers import mkdir
 from ml.custom.HIGGS.analysis.fit_hists import HistMaker
 
 
@@ -205,6 +206,8 @@ class FitSetup:
         **kwargs,
     ):
 
+        cache_dir = mkdir(cache_dir)
+
         self.n_bins = n_bins
         self.mc_only = mc_only
         self.bkg_only = bkg_only
@@ -249,101 +252,6 @@ class FitSetup:
                     scale_mc_sig=scale_mc_sig,
                     **kwargs,
                 )
-                pickle.dump((hists, errors, lumi, bin_edges), open(file_name, "wb"))
-
-            logging.info(f"[green]Signal fraction: {N_data_sig / N_mc_bkg:.2f}[/green]")
-
-            template = Template(
-                sig=hists["sig_mc"],
-                bkg=hists["bkg_gen"],
-                data=hists["data"],
-                bkg_stat_err=errors["bkg_gen"],
-                sig_stat_err=errors["sig_mc"],
-                bin_edges=bin_edges,
-                lumi=lumi,
-                sys_err=self.sys_err,
-                bounds_low=bounds_low,
-                bounds_up=bounds_up,
-                rtol=rtol,
-            )
-
-            self.templates.append(template)
-
-        return self.templates
-
-    # BPK add templates for different N_ML (N_gen)
-    def setup_templates_N(
-        self,
-        N_gen_lst,
-        N_mc_bkg,
-        N_data_sig,
-        n_bins=25,
-        bounds_low=0.0,
-        bounds_up=5.0,
-        rtol=0.1,
-        cache_dir="ml/data/higgs",
-        mc_only=False,
-        bkg_only=False,
-        cut_variable=False,
-        scale_mc_sig=True,
-        **kwargs,
-    ):
-
-        self.n_bins = n_bins
-        self.mc_only = mc_only
-        self.bkg_only = bkg_only
-        self.cut_variable = cut_variable
-
-        self.N_gen_lst = N_gen_lst
-        self.N_mc_bkg, self.N_data_sig = N_mc_bkg, N_data_sig
-
-        for i, N_gen in enumerate(N_gen_lst):
-
-            logging.info(f"[green]Requested ML events: {int(N_gen)}[/green]")
-
-            file_name = f"{cache_dir}/{self.model_name}_b{n_bins}_{int(N_mc_bkg)}_{int(N_data_sig)}_{N_gen}_N_hists"
-
-            if self.mc_only:
-                logging.info("[blue]Using MC only![/blue]")
-                file_name += "_mc_only"
-
-            if self.bkg_only:
-                logging.info("[blue]Using bkg only![/blue]")
-                file_name += "_bkg_only"
-
-            if self.cut_variable:
-                file_name += f"_{self.cut_variable}"
-
-            if not scale_mc_sig:
-                logging.info("[blue]Not scaling MC signal![/blue]")
-                file_name += "_no_sig_scaling"
-
-            file_name += ".p"
-
-            logging.info(f"[green]Requested file: {file_name}[/green]")
-            # BPK: override and reuse lumi=N_gen
-            if os.path.exists(file_name):
-                logging.info(
-                    f"[blue]{i}: Loading hists for {N_gen} ML generated, {N_mc_bkg} bkg and {N_data_sig} sig events![/blue]"
-                )
-                hists, errors, lumi, bin_edges = pickle.load(open(file_name, "rb"))
-            else:
-                logging.info(
-                    f"[blue]{i}: Setting up hists for for N_gen={N_gen} ML generated, N_mc_bkg={N_mc_bkg} and N_data_sig={N_data_sig}![/blue]"
-                )
-                hists, errors, lumi, bin_edges = self._setup_hists(
-                    N_gen,
-                    N_mc_bkg,
-                    N_data_sig,
-                    mc_only=mc_only,
-                    bkg_only=bkg_only,
-                    cut_variable=cut_variable,
-                    scale_mc_sig=scale_mc_sig,
-                    **kwargs,
-                )
-                lumi = {
-                    "data": N_gen,  # BPK: re-purpose lumi ...
-                }
                 pickle.dump((hists, errors, lumi, bin_edges), open(file_name, "wb"))
 
             logging.info(f"[green]Signal fraction: {N_data_sig / N_mc_bkg:.2f}[/green]")

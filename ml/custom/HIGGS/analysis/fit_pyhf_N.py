@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 import pyhf
 
+from ml.common.utils.picklers import mkdir
 from ml.custom.HIGGS.analysis.fit_hists_N import HistMaker
 
 
@@ -204,6 +205,7 @@ class FitSetup:
         scale_mc_sig=True,
         **kwargs,
     ):
+        cache_dir = mkdir(cache_dir)
 
         self.n_bins = n_bins
         self.mc_only = mc_only
@@ -288,6 +290,8 @@ class FitSetup:
         scale_mc_sig=True,
         **kwargs,
     ):
+
+        cache_dir = mkdir(cache_dir)
 
         self.n_bins = n_bins
         self.mc_only = mc_only

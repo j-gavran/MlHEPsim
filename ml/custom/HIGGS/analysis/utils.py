@@ -38,7 +38,7 @@ MODEL_MAP = {
     "MADEMOG_flow_model_gauss_rank7": "MADEMOG 2048",
     "MADEMOG_flow_model_logit_normal": "MADEMOG logit normal",
     "MADEMOG_flow_model_gauss_rank_mini": "MADEMOG",
-    "MADEMOG_flow_model_gauss_rank_best": "MADEMOG_BEST",
+    "MADEMOG_flow_model_gauss_rank_best": "MADEMOG",
     "ref": "MC",
 }
 

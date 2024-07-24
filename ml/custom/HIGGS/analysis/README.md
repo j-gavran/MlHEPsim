@@ -2,9 +2,10 @@
 
 ## Setup 
 
-- CPU monitorig: `htop`  
-- GPU monitoring: `nvtop` or `nvidia-smi -l 1`  
+- CPU monitorig: `htop`.
+- GPU monitoring: `nvtop` or `nvidia-smi -l 1`.
 - Training monitoring: `mlflow ui --port <number>`. Registered model names can be found in the Models tab. Comparison of two (or more) models can be done by clicking on the model name and selecting the Compare button.
+- Models are saved in `mlruns` using `MLflow`.
 
 ## Model training
 

@@ -1,0 +1,11 @@
+defaults:
+  - model_config
+  - training_config
+  - data_config
+
+experiment_config:
+  experiment_name: classifiers
+  run_name: DY_real_vs_generated
+  save_dir: mlruns
+  accelerator: auto
+  devices: 1

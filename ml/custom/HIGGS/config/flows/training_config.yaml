@@ -1,6 +1,6 @@
 training_config:
   learning_rate: 3.e-4
-  epochs: 150
+  epochs: 10
 
   compile: False
 

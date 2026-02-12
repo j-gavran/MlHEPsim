@@ -1,0 +1,12 @@
+data_config:
+  train_split: 0.8
+  val_split: 0.5
+  batch_size: 256
+  num_workers: 4
+  
+  # Data paths
+  real_data_path: ml/data/drellyan/DRELLYAN_sidebands.npy
+  generated_data_path: ml/data/drellyan/DrellYan_generated_MADEMOG_flow_model_gauss_rank.npy
+  
+  # Optional: limit number of samples for testing
+  n_samples: 10000 # Set to integer for quick testing, null for all data

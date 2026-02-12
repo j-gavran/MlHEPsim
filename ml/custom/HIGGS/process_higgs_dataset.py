@@ -107,16 +107,25 @@ class HIGGSNpyProcessor(NpyProcessor):
             29 dim dataframe of all downloaded data.
 
         """
+    
+        # 1 If the .npy file already exists, use it directly 
+        if Path(self.npy_file).is_file():
+            logging.info(f"🔹 Loading existing NPY file instead of CSV: {self.npy_file}")
+            try:
+                data = np.load(self.npy_file, allow_pickle=True)
+                return pd.DataFrame(data)
+            except Exception as e:
+                logging.warning(f"⚠️ Failed to load {self.npy_file}, falling back to CSV: {e}")
+
+        # 2 Handle holdout partitions if enabled 
         if self.hold_mode:
             if Path(self.hold_npy_partition_1).is_file() and Path(self.hold_npy_partition_2).is_file():
-                return None
-        else:
-            if Path(self.npy_file).is_file():
+                logging.info("Holdout NPY partitions found, skipping CSV read.")
                 return None
 
+        # 3 Otherwise, download and read CSV 
         self.download()
         dataset = self._read_gzip_df()
-
         return dataset
 
     def download(self):

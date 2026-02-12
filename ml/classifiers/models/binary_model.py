@@ -1,7 +1,5 @@
 import logging
-
 from torchmetrics.classification import BinaryAccuracy
-
 from ml.classifiers.models.multilabel_model import MultilabelClassifier
 
 

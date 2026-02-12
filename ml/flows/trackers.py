@@ -13,20 +13,57 @@ from ml.common.utils.plot_utils import (
 
 
 class FlowTracker(Tracker):
-    def __init__(self, experiment_conf, tracker_path, n_samples=10**5, n_bins=50):
+    def __init__(self, experiment_conf, tracker_path, n_bins=50):
         super().__init__(experiment_conf, tracker_path)
-        self.n_samples = n_samples
 
         self.n_bins = n_bins
-
         self.density = None
         self.generated = None
+        self.train_losses = []
+        self.validation_losses = []
+        self.epochs = []
 
     def make_plotting_dirs(self):
         return {
             "density": f"{self.base_dir}/density/",
             "generated": f"{self.base_dir}/generated/",
+            "loss_plots": f"{self.base_dir}/loss_plots/",
         }
+
+    def on_train_epoch_end(self):
+        """Collect metrics at the end of each training epoch"""
+        
+        # Get the current epoch number
+        current_epoch = self.module.current_epoch
+        
+        # Try to get train_loss from callback_metrics or logged_metrics
+        train_loss = (
+            self.module.trainer.callback_metrics.get('train_loss', None) or
+            self.module.trainer.logged_metrics.get('train_loss', None)
+        )
+
+        # Store training loss immediately if available
+        if train_loss is not None:
+            self.train_losses.append(train_loss.item())
+            self.epochs.append(current_epoch)
+
+
+    def on_validation_epoch_end(self):
+        """Collect validation metrics at the end of each validation epoch"""
+
+        val_loss = (
+            self.module.trainer.callback_metrics.get('val_loss', None) or
+            self.module.trainer.logged_metrics.get('val_loss', None)
+        )
+        
+        if val_loss is not None:
+            self.validation_losses.append(val_loss.item())
+
+    def on_train_end(self):
+        """Called when training ends - ensures loss plot is always created"""
+        if self.train_losses and self.validation_losses:
+            print(f"Training complete. Creating final loss history plot with {len(self.train_losses)} training points.")
+            self.plot_training_history()
 
     def get_predictions(self, stage):
         self.stage = stage
@@ -67,6 +104,39 @@ class FlowTracker(Tracker):
 
         return True
 
+    @handle_plot_exception
+    def plot_training_history(self):
+        """Plot complete training and validation loss history"""
+        
+        if not self.train_losses or not self.validation_losses:
+            print(f"Warning: No loss data to plot!")
+            return
+
+        # Ensure plotting_dirs exists
+        if not hasattr(self, 'plotting_dirs'):
+            print("Warning: plotting_dirs not initialized, initializing now...")
+            self.plotting_dirs = self.make_plotting_dirs()
+            for dir_path in self.plotting_dirs.values():
+                import os
+                os.makedirs(dir_path, exist_ok=True)
+
+        print("Plotting training history at epoch", self.current_epoch)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        # Plot both training and validation losses
+        ax.plot(self.epochs, self.train_losses, 'b-', label='Training Loss')
+        ax.plot(self.epochs, self.validation_losses, 'r-', label='Validation Loss')
+        
+        ax.set_xlabel('Epoch')
+        ax.set_ylabel('Loss')
+        ax.set_title('Training and Validation Loss History')
+        ax.grid(True)
+        ax.legend()
+        
+        plt.tight_layout()
+        fig.savefig(f"{self.plotting_dirs['loss_plots']}/loss_history.png")
+        plt.close()
+    
     @handle_plot_exception
     def density_plot(self):
         fig, ax = plt.subplots()

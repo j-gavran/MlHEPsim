@@ -228,3 +228,20 @@ class FlowModel(Module):
         self.log("val_nll", torch.mean(nll))
 
         return {"val_loss": loss, "sum_log_det_jac": jac_loss, "val_nll": nll}
+
+    def on_train_epoch_end(self):
+        """Called at the end of each training epoch - forward to tracker"""
+        super().on_train_epoch_end()
+        if self.tracker:
+            self.tracker.on_train_epoch_end()
+    
+    def on_validation_epoch_end(self):
+        """Called at the end of each validation epoch - forward to tracker"""
+        super().on_validation_epoch_end()
+        if self.tracker:
+            self.tracker.on_validation_epoch_end()
+    
+    def on_train_end(self):
+        """Called when training ends - forward to tracker"""
+        if self.tracker:
+            self.tracker.on_train_end()

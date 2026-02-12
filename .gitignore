@@ -1,3 +1,11 @@
+# Melle's ignores
+
+#large files
+*.csv.gz
+*.pth
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

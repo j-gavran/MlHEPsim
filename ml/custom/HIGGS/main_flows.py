@@ -4,7 +4,7 @@ import time
 import hydra
 import lightning as L
 import torch
-from lightning.pytorch.callbacks import ModelCheckpoint, TQDMProgressBar
+from lightning.pytorch.callbacks import ModelCheckpoint, TQDMProgressBar, Callback
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks.lr_monitor import LearningRateMonitor
 from lightning.pytorch.loggers import MLFlowLogger
@@ -30,6 +30,17 @@ from ml.flows.models import (
     RqSplineFlow,
 )
 from ml.flows.trackers import FlowTracker as Tracker
+
+
+
+class FinalEpochLogger(Callback):
+    """Logs only the final epoch information when training ends."""
+    
+    def on_train_end(self, trainer, pl_module):
+        logging.info(f"Training completed at epoch {trainer.current_epoch}")
+        logging.info(f"Total steps: {trainer.global_step}")
+        logging.info(f"Best model checkpoint: {trainer.checkpoint_callback.best_model_path}")
+        logging.info(f"Best validation loss: {trainer.checkpoint_callback.best_model_score:.6f}")
 
 
 class DropLabelProcessor:
@@ -94,8 +105,8 @@ def main(config):
     torch.set_float32_matmul_precision("high")
     L.seed_everything(experiment_conf["seed"], workers=True)
 
-    # data processing
-    npy_proc = HIGGSNpyProcessor(**data_conf["input_processing"])
+    # data processing 
+    npy_proc = HIGGSNpyProcessor(data_dir="ml/data/higgs/", base_file_name="HIGGS" ) 
 
     f_sel = HIGGSFeatureSelector(npy_proc.npy_file, **data_conf["feature_selection"])
 
@@ -165,7 +176,7 @@ def main(config):
 
     # define callbacks
     callbacks = [
-        TQDMProgressBar(),
+        #TQDMProgressBar(),    # WARNING: Turn off when running on batch system to avoid huge log files
         LearningRateMonitor(logging_interval="step"),
         EarlyStopping(
             monitor="val_loss",
@@ -177,6 +188,7 @@ def main(config):
             ),
         ),
         ModelCheckpoint(save_weights_only=True, mode="min", monitor="val_loss"),
+        FinalEpochLogger(),
     ]
 
     # initialize mlflow logger
@@ -199,6 +211,7 @@ def main(config):
         logger=mlf_logger,
         callbacks=callbacks,
         gradient_clip_val=1.0,
+        enable_progress_bar=False,  # WARNING: Turn off (False) when running on batch system to avoid huge log files
     )
 
     if experiment_conf["model_postfix"] is not None:
@@ -215,3 +228,4 @@ def main(config):
 
 if __name__ == "__main__":
     main()
+

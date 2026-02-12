@@ -1,0 +1,6 @@
+training_config:
+  loss: BCEWithLogitsLoss
+  optimizer: Adam
+  learning_rate: 0.001
+  epochs: 100
+  early_stop_patience: 10

@@ -1,0 +1,20 @@
+training_config:
+  learning_rate: 1.e-4
+  epochs: 1000
+
+  compile: False
+
+  optimizer: Adam
+  early_stop_patience: 5
+  weight_decay: 1.e-4
+
+  scheduler:
+    scheduler_name: ReduceLROnPlateau
+    interval: epoch
+    reduce_lr_on_epoch: null
+    scheduler_params:
+      mode: min
+      factor: 0.5
+      patience: 5
+      min_lr: 1.e-7
+      verbose: true

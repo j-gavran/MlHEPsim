@@ -1,0 +1,40 @@
+data_config:
+  data_name: DrellYan
+  input_dim: 6
+  base_distribution: normal
+  train_split: 0.8
+  val_split: 0.5
+
+  input_processing:
+    shuffle: True
+    keep_ratio: 1.0
+    hold_mode: False
+    use_hold: False
+    hold_ratio: 0.5
+    # Mass region selection: 'full_data' or 'sidebands'
+    mass_region: sidebands
+    # Signal region mass range
+    min_mass: 110 # Data files 1,2 and 3 have a pre selection of mZ > 105 GeV with edge effects up to roughly 107 GeV 
+    max_mass: 160
+    # Sideband mass ranges 
+    sideband_lower_min: 100 
+    sideband_lower_max: 122
+    sideband_upper_min: 128
+    sideband_upper_max: 180
+
+  feature_selection:
+    n_data: 50000  #for testing use 100000 & null for all data during actual training 
+    keep_names: ["Muons_Pos_Eta", "Muons_Neg_Eta", "Muons_Pos_PT", "Muons_Neg_PT", "Muons_Pos_Phi", "Muons_Neg_Phi"]
+
+
+  preprocessing:
+    cont_rescale_type: gauss_rank
+    disc_rescale_type: null
+    no_process: null
+
+  dataloader_config:
+    batch_size: 256
+    num_workers: 16 # Use -1 to use all available cores (uses much more RAM)
+    pin_memory: False # Set to True to speed up GPU transfer (uses more CPU RAM only use if enough available) !!Tried True and was slower??
+    drop_last: True
+    persistent_workers: False  # Don't keep workers alive to save memory

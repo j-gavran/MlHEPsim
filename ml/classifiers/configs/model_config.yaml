@@ -1,0 +1,9 @@
+model_config:
+  model: MLP
+  input_dim: 6
+  hidden_dim: [128, 64, 32]
+  output_dim: 1
+  activation_function: ReLU
+  act_out: null  # Use raw logits for BCEWithLogitsLoss
+  batchnorm: true
+  dropout: 0.1

@@ -15,7 +15,7 @@ data_config:
     hold_ratio: 0.5
 
   feature_selection:
-    n_data: null
+    n_data: 100000   #for testing use 100000 & null for all data during actual training
     drop_types: [uni, disc]
     drop_names: []
     keep_names: null
@@ -29,6 +29,6 @@ data_config:
 
   dataloader_config:
     batch_size: 1024
-    num_workers: -1
+    num_workers: -1 # Trick to use all available cores of system
     pin_memory: False
     drop_last: True
